@@ -7,5 +7,7 @@ import java.util.Map;
  * @date 2021年09月09日 11:42
  */
 public interface AirQualityStatusMapper   {
+
+
     Map<String, String> queryMaxDate();
 }
