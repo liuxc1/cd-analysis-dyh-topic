@@ -1,0 +1,17 @@
+.el-upload__input {
+	display: none !important;
+}
+
+.el-upload--text {
+	width: 0px;
+}
+
+.file-upload-table {
+	table-layout: fixed;
+}
+
+.file-upload-table td {
+	overflow: hidden;
+	text-overflow:ellipsis;
+	white-space: nowrap;
+}

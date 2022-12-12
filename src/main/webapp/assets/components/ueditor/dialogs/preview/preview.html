@@ -1,0 +1,33 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+    "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <style>
+          #preview{
+                width:90%;
+                height:100%;
+                padding:0;
+                margin: auto;
+			    position: absolute;
+			    top: 0;
+			    left: 0;
+			    right: 0;
+			    bottom: 0;
+            }
+        </style>
+        <title></title>
+    </head>
+    <body >
+        <div id="preview" style="margin:8px">
+
+        </div>
+    </body>
+    <script>
+    	parent.document.getElementById('edui_fixedlayer').style.zIndex=2000;
+        document.getElementById('preview').innerHTML = editor.getContent();
+        dialog.oncancel = function(){
+            document.getElementById('preview').innerHTML = '';
+        }
+    </script>
+</html>

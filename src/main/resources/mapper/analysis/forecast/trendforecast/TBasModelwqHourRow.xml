@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="ths.project.analysis.forecast.trendforecast.mapper.TrendForecastMapper">
+
+    <select id="getHourDate" parameterType="string"
+            resultType="ths.project.analysis.forecast.trendforecast.entity.TBasModelwqHourRow">
+        SELECT
+        CONVERT (varchar(13), MODELTIME,120) AS MODELTIME,
+        RESULTTIME,POINTNAME,SO2,NO2,PM10,CO,O3,PM25,VOCS
+        FROM
+        AIR_FORECAST.T_BAS_MODELWQ_HOUR_ROW
+        WHERE
+        <choose>
+            <when test="type=='zero'">
+                modelTime = #{modelTime} + ' 00:00:00'
+            </when>
+            <when test="type=='twelve'">
+                modelTime = #{modelTime} + ' 12:00:00'
+            </when>
+        </choose>
+        AND MODEL = 'CDAQS_MT'
+        AND POINTCODE = #{pointCode}
+        ORDER BY
+        MODELTIME ASC,
+        RESULTTIME ASC
+    </select>
+
+    <select id="getForecastExportData" resultType="java.util.LinkedHashMap">
+        SELECT
+        POINTNAME,
+        CONVERT(varchar(100), RESULTTIME, 20)AS RESULTTIME,
+        SO2,
+        NO2,
+        PM10,
+        CO,
+        O3,
+        PM25,
+        VOCS
+        FROM
+        AIR_FORECAST.T_BAS_MODELWQ_HOUR_ROW
+        WHERE MODEL = #{model}
+        <choose>
+            <when test="queryType=='zero'">
+                <if test="modelTime !=null and modelTime !=''">
+                    AND modelTime = #{modelTime} + ' 00:00:00'
+                </if>
+            </when>
+            <when test="queryType=='twelve'">
+                <if test="modelTime !=null and modelTime !=''">
+                    AND modelTime = #{modelTime} + ' 12:00:00'
+                </if>
+            </when>
+        </choose>
+        AND POINTCODE = #{pointCode}
+        ORDER BY
+        MODELTIME ASC,RESULTTIME ASC
+    </select>
+
+    <select id="queryTBasModelwqHourRowZeroPageList" parameterType="string"
+            resultType="ths.project.analysis.forecast.trendforecast.entity.TBasModelwqHourRow">
+        SELECT
+        CONVERT (varchar(13), MODELTIME,120) AS MODELTIME,
+        CONVERT(varchar(100), RESULTTIME, 20)AS RESULTTIME,
+        POINTNAME,SO2,NO2,PM10,CO,O3,PM25,VOCS
+        FROM
+        AIR_FORECAST.T_BAS_MODELWQ_HOUR_ROW
+        WHERE
+        modelTime = #{modelTime} + ' 00:00:00'
+        AND MODEL = 'CDAQS_MT'
+        AND POINTCODE = #{pointCode}
+        AND RESULTTIME &gt; DATEADD(day, 0, #{startTime})
+        AND RESULTTIME &lt; DATEADD(day, 0, #{endTime})
+        ORDER BY
+        MODELTIME ASC,
+        RESULTTIME ASC
+    </select>
+
+
+    <select id="queryTBasModelwqHourRowTwelvePageList" parameterType="string"
+            resultType="ths.project.analysis.forecast.trendforecast.entity.TBasModelwqHourRow">
+        SELECT
+        CONVERT (varchar(13), MODELTIME,120) AS MODELTIME,
+        CONVERT(varchar(100), RESULTTIME, 20)AS RESULTTIME,
+        POINTNAME,SO2,NO2,PM10,CO,O3,PM25,VOCS
+        FROM
+        AIR_FORECAST.T_BAS_MODELWQ_HOUR_ROW
+        WHERE
+        modelTime =  #{modelTime} + ' 12:00:00'
+        AND MODEL = 'CDAQS_MT'
+        AND POINTCODE = #{pointCode}
+        AND RESULTTIME &gt; DATEADD(day, 0, #{startTime})
+        AND RESULTTIME &lt; DATEADD(day, 0, #{endTime})
+        ORDER BY
+        MODELTIME ASC,
+        RESULTTIME ASC
+    </select>
+
+</mapper>

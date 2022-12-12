@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="ths.project.analysis.forecast.fourteendayforecastcalendar.mapper.PlainForecastCalendarMapper">
+
+    <select id="getCalendarList" resultType="ths.project.analysis.forecast.fourteendayforecastcalendar.entity.TBasModelwqDayRow">
+        SELECT
+        CONVERT (varchar(13), MODELTIME,120) AS MODELTIME,
+        CONVERT (varchar(10), RESULTTIME,120) AS RESULTTIME,
+        REGIONNAME,AQI_MIN,AQI_MAX
+        FROM
+        AIR_FORECAST.T_BAS_MODELWQ_DAY_ROW
+        WHERE MODEL = #{model} AND RESULTTIME > #{modelTime}
+        <choose>
+            <when test="queryType=='zero'">
+                AND modelTime = #{modelTime} + ' 00:00:00'
+            </when>
+            <otherwise>
+                AND modelTime = #{modelTime} + ' 12:00:00'
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="cityNums==4">
+                AND POINTNAME IN('成都市','德阳市','眉山市','资阳市')
+            </when>
+            <otherwise>
+                AND POINTNAME IN('成都市','德阳市','绵阳市','眉山市','资阳市','乐山市','遂宁市','雅安市')
+            </otherwise>
+        </choose>
+        ORDER BY MODELTIME ASC,RESULTTIME ASC
+    </select>
+
+    <select id="getForecastExportData" resultType="java.util.LinkedHashMap">
+        SELECT
+        CONVERT ( VARCHAR ( 10 ), RESULTTIME, 120 ) AS RESULTTIME,
+        isnull( POINTNAME, '--' ) AS POINTNAME,
+        isnull( CAST ( AQI AS VARCHAR ), '--' ) AS AQI,
+        isnull( CAST ( AQI_MIN AS VARCHAR ), '--' ) AS AQI_MIN,
+        isnull( CAST ( AQI_MAX AS VARCHAR ), '--' ) AS AQI_MAX
+        FROM
+        AIR_FORECAST.T_BAS_MODELWQ_DAY_ROW
+        WHERE MODEL = #{model} AND RESULTTIME >#{modelTime}
+        <choose>
+            <when test="queryType=='zero'">
+                <if test="modelTime !=null and modelTime !=''">
+                    AND modelTime = #{modelTime} + ' 00:00:00'
+                </if>
+            </when>
+            <otherwise>
+                <if test="modelTime !=null and modelTime !=''">
+                    AND modelTime = #{modelTime} + ' 12:00:00'
+                </if>
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="cityNums==4">
+                AND POINTNAME IN('成都市','德阳市','眉山市','资阳市')
+            </when>
+            <otherwise>
+                AND POINTNAME IN('成都市','德阳市','绵阳市','眉山市','资阳市','乐山市','遂宁市','雅安市')
+            </otherwise>
+        </choose>
+        ORDER BY MODELTIME ASC,RESULTTIME ASC
+    </select>
+
+
+</mapper>

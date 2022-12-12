@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="ths.project.mapper.PersonMapper">
+
+	<insert id="insert" parameterType="java.util.Map">
+		INSERT INTO T_PERSON_INFO
+    	<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="PERSON_ID != null">
+				PERSON_ID,
+			</if>
+			<if test="PERSON_NAME != null">
+				PERSON_NAME,
+			</if>
+			<if test="PHONE != null">
+				PHONE,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">			
+			<if test="PERSON_ID != null">
+				#{PERSON_ID,jdbcType=VARCHAR},
+			</if>
+			<if test="PERSON_NAME != null">
+				#{PERSON_NAME,jdbcType=VARCHAR},
+			</if>
+			<if test="PHONE != null">
+				#{PHONE,jdbcType=VARCHAR},
+			</if>
+		</trim>
+	</insert>
+		
+	<update id="update" parameterType="java.util.Map">
+	   	UPDATE T_PERSON_INFO
+		<set>
+			<if test="PERSON_NAME != null">
+				PERSON_NAME = #{PERSON_NAME,jdbcType=VARCHAR},
+			</if>
+			<if test="PHONE != null">
+				PHONE = #{PHONE,jdbcType=VARCHAR},
+			</if>
+		</set>
+		where PERSON_ID = #{PERSON_ID,jdbcType=VARCHAR}
+	</update>
+	
+	<delete id="delete" >
+		DELETE FROM T_PERSON_INFO WHERE PERSON_ID = #{PERSON_ID, jdbcType=VARCHAR}
+	</delete>
+</mapper>
+

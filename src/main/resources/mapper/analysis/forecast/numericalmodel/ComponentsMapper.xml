@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<mapper namespace="ths.project.analysis.forecast.numericalmodel.mapper.ComponentsMapper">
+
+    <select id="queryComponentsData" resultType="java.util.Map">
+        SELECT
+            MODEL_TIME,
+            RESULT_TIME,
+        <choose>
+            <when test="showType !=null and showType !='' and showType=='heap'">
+                PM25_SO4,
+                PM25_NH4,
+                PM25_NO3,
+                PM25_OC,
+                PM25_EC,
+                PM25_OTHER
+            </when>
+            <otherwise>
+                ROUND(PM25_SO4*100/total,2) AS PM25_SO4,
+                ROUND(PM25_NH4*100/total,2) AS PM25_NH4,
+                ROUND(PM25_NO3*100/total,2) AS PM25_NO3,
+                ROUND(PM25_OC*100/total,2) AS PM25_OC,
+                ROUND(PM25_EC*100/total,2) AS PM25_EC,
+                (100.00-( ROUND(PM25_SO4*100/total,2)+ ROUND(PM25_NH4*100/total,2)+ ROUND(PM25_NO3*100/total,2)+
+                ROUND(PM25_OC*100/total,2)+ ROUND(PM25_EC*100/total,2))) AS PM25_OTHER
+            </otherwise>
+        </choose>
+        FROM(
+        SELECT
+        CONVERT ( VARCHAR ( 13 ), MODEL_TIME, 120 ) AS MODEL_TIME,
+        CONVERT ( VARCHAR ( 16 ), RESULT_TIME, 120 ) AS RESULT_TIME,
+        PM25_SO4,
+        PM25_NO3,
+        PM25_NH4,
+        PM25_EC,
+        PM25_OC,
+        PM25_OTHER ,
+        (PM25_SO4+PM25_NO3+PM25_NH4+PM25_EC+PM25_OC+PM25_OTHER) as total
+        FROM
+        AIR_FORECAST.T_PM25_COMPONENTS
+        WHERE
+        <choose>
+            <when test="step !=null and step != ''">
+                STEP BETWEEN 1 AND ${step}
+            </when>
+            <otherwise>
+                STEP BETWEEN 1 AND 14
+            </otherwise>
+        </choose>
+        <if test="model!=null and model!=''">
+            AND MODEL = #{model}
+        </if>
+        <if test="pointCode!=null and pointCode!=''">
+            AND POINT_CODE = #{pointCode}
+        </if>
+        <if test="modelTime!=null and modelTime!=''">
+            AND MODEL_TIME = CONVERT ( datetime, #{modelTime}, 20 )
+        </if>
+        ) T ORDER BY RESULT_TIME ASC
+    </select>
+    <select id="getComponentsExportData" resultType="java.util.LinkedHashMap">
+        SELECT
+        MODEL,
+        MODEL_TIME,
+        RESULT_TIME,
+        POINT_NAME,
+        <choose>
+            <when test="showType !=null and showType !='' and showType=='heap'">
+                PM25_SO4,
+                PM25_NH4,
+                PM25_NO3,
+                PM25_OC,
+                PM25_EC,
+                PM25_OTHER
+            </when>
+            <otherwise>
+                ROUND(PM25_SO4*100/total,2) AS PM25_SO4,
+                ROUND(PM25_NH4*100/total,2) AS PM25_NH4,
+                ROUND(PM25_NO3*100/total,2) AS PM25_NO3,
+                ROUND(PM25_OC*100/total,2) AS PM25_OC,
+                ROUND(PM25_EC*100/total,2) AS PM25_EC,
+                (100.00-( ROUND(PM25_SO4*100/total,2)+ ROUND(PM25_NH4*100/total,2)+ ROUND(PM25_NO3*100/total,2)+
+                ROUND(PM25_OC*100/total,2)+ ROUND(PM25_EC*100/total,2))) AS PM25_OTHER
+            </otherwise>
+        </choose>
+        FROM(
+        SELECT
+        MODEL,
+        CONVERT ( VARCHAR ( 20 ), MODEL_TIME, 120 ) AS MODEL_TIME,
+        CONVERT ( VARCHAR ( 20 ), RESULT_TIME, 120 ) AS RESULT_TIME,
+        POINT_NAME,
+        PM25_SO4,
+        PM25_NO3,
+        PM25_NH4,
+        PM25_EC,
+        PM25_OC,
+        PM25_OTHER ,
+        (PM25_SO4+PM25_NO3+PM25_NH4+PM25_EC+PM25_OC+PM25_OTHER) as total
+        FROM
+        AIR_FORECAST.T_PM25_COMPONENTS
+        WHERE
+        <choose>
+            <when test="step !=null and step != ''">
+                STEP BETWEEN 1 AND ${step}
+            </when>
+            <otherwise>
+                STEP BETWEEN 1 AND 14
+            </otherwise>
+        </choose>
+        <if test="model!=null and model!=''">
+            AND MODEL = #{model}
+        </if>
+        <if test="pointCode!=null and pointCode!=''">
+            AND POINT_CODE = #{pointCode}
+        </if>
+        <if test="modelTime!=null and modelTime!=''">
+            AND MODEL_TIME = CONVERT ( datetime, #{modelTime}, 20 )
+        </if>
+        ) T ORDER BY RESULT_TIME ASC
+    </select>
+</mapper>

@@ -1,0 +1,29 @@
+package ${exportInfo.modelPackage};
+
+import java.util.List;
+
+import ${exportInfo.modelPackage}.${exportInfo.modelClassName};
+
+/**
+ * $!{exportInfo.tableName} Model集合类
+ * @author eform4.0
+ * @since ${CREATE_DATE}
+ */
+public class ${exportInfo.modelClassName}s {
+
+#set($modelClassNameParam = ${formTemplateService.lowerCaseFirstChar("${exportInfo.modelClassName}")})##
+	public List<${exportInfo.modelClassName}> ${modelClassNameParam}s;
+	
+	/**
+	 * @return the ${modelClassNameParam}s
+	 */
+	public List<${exportInfo.modelClassName}> get${exportInfo.modelClassName}s() {
+		return ${modelClassNameParam}s;
+	}
+	/**
+	 * @param ${modelClassNameParam}s the ${modelClassNameParam}s to set
+	 */
+	public void set${exportInfo.modelClassName}s(List<${exportInfo.modelClassName}> ${modelClassNameParam}s) {
+		this.${modelClassNameParam}s = ${modelClassNameParam}s;
+	}
+}

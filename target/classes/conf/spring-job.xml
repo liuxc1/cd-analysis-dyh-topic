@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns="http://www.springframework.org/schema/beans"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!-- 异步线程池，用于异步发送消息，单例 -->
+    <bean id="jobThreadPoolTaskExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
+        <!-- 核心线程数-->
+        <property name="corePoolSize" value="10"/>
+        <!-- 最大线程数 -->
+        <property name="maxPoolSize" value="50"/>
+        <!-- 队列最大长度>= mainExecutor.maxSize -->
+        <property name="queueCapacity" value="2000"/>
+        <!-- 线程池维护线程所允许的空闲时间（单位秒） -->
+        <property name="keepAliveSeconds" value="60"/>
+        <!-- 线程池对拒绝任务(无线程可用)的处理 策略 -->
+        <!-- 若不作该处理，当线程满了，队列满了之后，继续往下增加任务，则抛出异常，拒绝该任务 -->
+        <property name="rejectedExecutionHandler">
+            <bean class="java.util.concurrent.ThreadPoolExecutor$CallerRunsPolicy"/>
+        </property>
+        <property name="threadFactory">
+            <bean class="ths.project.common.factory.CustomThreadFactory">
+                <constructor-arg index="0" value="jobThreadFactory_0"/>
+                <constructor-arg index="1" value="false"/>
+            </bean>
+        </property>
+    </bean>
+
+    <!-- 调度工厂 -->
+    <bean id="scheduler" class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+        <property name="triggers">
+            <list>
+
+                <!-- 短信-成都市未来3天空气质量预报 -->
+                <!--  <ref bean="citySendMessage3DayTaskQuartzTrigger" /> -->
+                <!-- <ref bean="citySendMessage3DayTaskStartTrigger" /> -->
+                <!-- 短信-成都市未来7天空气质量预报 -->
+<!--                <ref bean="citySendMessage7DayTaskQuartzTrigger" />-->
+<!--                <ref bean="citySendMessage7DayTaskStartTrigger" />-->
+
+                <!-- 邮件-成都市未来3天空气质量预报 -->
+<!--                <ref bean="citySendMail3DayTaskQuartzTrigger" />-->
+<!--                <ref bean="citySendMail3DayTaskStartTrigger" />-->
+                <!-- 邮件-成都市未来7天空气质量预报 -->
+<!--                <ref bean="citySendMail7DayTaskQuartzTrigger" />-->
+<!--                 <ref bean="citySendMail7DayTaskStartTrigger" />-->
+                <!-- 邮件-分区预报
+                <ref bean="partitionForecastSendMailJobTaskQuartzTrigger" />
+                 <ref bean="partitionForecastSendMailJobTaskStartTrigger" />-->
+
+            </list>
+        </property>
+        <!-- 配置线程池，详情参考spring-thread.xml -->
+        <property name="taskExecutor" ref="jobThreadPoolTaskExecutor"/>
+    </bean>
+
+</beans>

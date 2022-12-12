@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 快报分析报告 -->
+<mapper namespace="ths.project.analysis.fast.FastAnalysisReportMapper">
+    <!-- 根据月份查询预报列表 -->
+    <select id="queryForecastListByMonth" resultType="map">
+        SELECT REPORT_ID, ASCRIPTION_TYPE,ASCRIPTION_TYPE_TWO,
+        ASCRIPTION_TYPE_THREE,ASCRIPTION_TYPE_FOUR,ASCRIPTION_TYPE_FIVE,REPORT_BATCH,
+        REPORT_NAME, CONVERT(VARCHAR, REPORT_TIME, 23) REPORT_TIME, REPORT_RATE,
+        REPORT_FREQUENCY, REPORT_TYPE, REPORT_TIP,
+        REMARK, FIELD1, FIELD2,
+        FIELD3, FIELD4, REPORT_INSCRIBE,
+        STATE, CONVERT(VARCHAR, CREATE_TIME, 120) CREATE_TIME, CREATE_DEPT,
+        CREATE_USER, CONVERT(VARCHAR, EDIT_TIME, 120) EDIT_TIME, EDIT_USER
+        FROM AIR_ANALYSISREPORT.T_NEWSLETTER_ANALYSIS
+        WHERE ASCRIPTION_TYPE = #{ascriptionType}
+        <if test="startMonth != null and startMonth != ''">
+            <![CDATA[AND REPORT_TIME >= CONVERT(DATETIME, #{startMonth} + '-01', 120)]]>
+        </if>
+        <if test="endMonth != null and endMonth != ''">
+            <![CDATA[AND REPORT_TIME < DATEADD(MONTH, 1, CONVERT(DATETIME, #{endMonth} + '-01', 120))]]>
+        </if>
+        ORDER BY REPORT_TIME ASC, CREATE_TIME ASC
+    </select>
+
+    <!-- 根据报告ID删除报告 -->
+    <delete id="deleteReportById">
+		DELETE FROM AIR_ANALYSISREPORT.T_NEWSLETTER_ANALYSIS WHERE REPORT_ID = #{reportId}
+	</delete>
+
+    <!-- 修改报告状态 -->
+    <select id="updateReportState">
+		UPDATE AIR_ANALYSISREPORT.T_NEWSLETTER_ANALYSIS SET STATE = #{state} WHERE REPORT_ID = #{reportId}
+	</select>
+
+    <!-- 查询特定状态记录数 -->
+    <select id="queryStateNumber" resultType="map">
+		SELECT COUNT(1) STATE_NUMBER
+		  FROM AIR_ANALYSISREPORT.T_NEWSLETTER_ANALYSIS
+		 WHERE ASCRIPTION_TYPE = #{ascriptionType}
+		   AND STATE = #{state}
+		   AND REPORT_TIME = CONVERT(DATETIME, #{reportTime}, 120)
+	</select>
+</mapper>

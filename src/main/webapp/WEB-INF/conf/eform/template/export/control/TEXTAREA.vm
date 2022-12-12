@@ -1,0 +1,4 @@
+##文本域
+${t}<textarea id="${modelFieldCodeParam}$!{modelFieldCodeIndex}"#if("$!{controlFormCell.pFormcellId}" == "") name="${modelFieldCodeParam}"#end #if("$!controlFormCell.formcellReadonly" == "true")readonly="readonly"#end
+
+${t}		#if("$!{controlFormCell.formcellMessage}" != "")placeholder="$!{controlFormCell.formcellMessage}"#end#if("$!{controlFormCell.dataValidateEngine}" != "") data-validation-engine="$!{controlFormCell.dataValidateEngine}"#end style="width: 100%; #if("$!{controlFormCell.formcellHeight}" != "")height: ${controlFormCell.formcellHeight};#end">${elParam}{${modelFieldCodeValueParam}}</textarea>

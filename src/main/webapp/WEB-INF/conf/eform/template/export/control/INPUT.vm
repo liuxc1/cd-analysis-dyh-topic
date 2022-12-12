@@ -1,0 +1,6 @@
+##文本框
+${t}<input type="text" class="form-control" id="${modelFieldCodeParam}$!{modelFieldCodeIndex}"#if("$!{controlFormCell.pFormcellId}" == "") name="${modelFieldCodeParam}"#end #if($!controlFormCell.formcellReadonly == "true")readonly="readonly"#end
+
+${t}		#if(${showValueAttribute} == "true")value="${elParam}{${modelFieldCodeValueParam}}" oldValue="${elParam}{${modelFieldCodeValueParam}}" #end#if("$!{controlFormCell.formcellMessage}" != "")placeholder="$!{controlFormCell.formcellMessage}" #end
+
+${t}		#if("$!{controlFormCell.dataValidateEngine}" != "")data-validation-engine="$!{controlFormCell.dataValidateEngine}"#end#if("$!{controlFormCell.formcellHeight}" != "") style="height: ${controlFormCell.formcellHeight};"#end/>

@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="ths.project.analysis.analysisreport.mapper.MonthlyAnalysisMapper">
+    <select id="getLastYearData" resultType="ths.project.analysis.analysisreport.entity.TMonthlyAnalysis">
+
+        SELECT SUM
+        ( CASE WHEN CODE_AQILEVEL &lt;= 2 THEN 1 ELSE 0 END ) AS EXCELLENTAND_GOOD,
+        SUM ( CASE WHEN CODE_AQILEVEL = 1 THEN 1 ELSE 0 END ) AS EXCELLENT,
+        SUM ( CASE WHEN CODE_AQILEVEL = 2 THEN 1 ELSE 0 END ) AS GOOD,
+        CAST (
+        (
+        CONVERT (
+        DECIMAL ( 18, 2 ),
+        SUM ( CASE WHEN AQISTATIONNAME = '优' OR AQISTATIONNAME = '良' THEN 1 ELSE 0 END ) * 1.0 / COUNT ( 1 )
+        ) * 100
+        ) AS VARCHAR ( 50 )
+        ) + '%' AS CORRECT_RATE,
+        SUM ( CASE WHEN CODE_AQILEVEL >= 3 THEN 1 ELSE 0 END ) AS CONTAMINATION_DAYS,
+        SUM ( CASE WHEN CODE_AQILEVEL = 3 THEN 1 ELSE 0 END ) AS LIGHT_POLLUTION,
+        SUM ( CASE WHEN CODE_AQILEVEL = 4 THEN 1 ELSE 0 END ) AS MODERATELY_POLLUTED,
+        SUM ( CASE WHEN CODE_AQILEVEL = 5 THEN 1 ELSE 0 END ) AS HEAVY_POLLUTION,
+        (
+        SELECT
+        stuff(
+        ( SELECT ',' + PRIMARYPOLLUTANT FROM TENVAIR.T_ENV_AIRDATA_REGION_DAY WHERE CODE_REGION = '510100000000' AND MONITORTIME >= #{oldStartTime} AND MONITORTIME &lt;= #{oldEndTime} FOR XML PATH ( '' ) ),
+        1,
+        1,
+        ''
+        )
+        ) AS PRIMARY_POLLUTANT,
+        ROUND(
+        (
+        SELECT DISTINCT
+        PERCENTILE_CONT ( 0.9 ) WITHIN GROUP ( ORDER BY PM10 ) OVER ( ) AS MedianCont
+        FROM
+        TENVAIR.T_ENV_AIRDATA_REGION_DAY
+        WHERE
+        CODE_REGION = '510100000000'
+        AND MONITORTIME >= #{oldStartTime}
+        AND MONITORTIME &lt;= #{oldEndTime}
+        ),
+        0
+        ) AS PM10,
+        ROUND(
+        (
+        SELECT DISTINCT
+        PERCENTILE_CONT ( 0.9 ) WITHIN GROUP ( ORDER BY PM2_5 ) OVER ( ) AS MedianCont
+        FROM
+        TENVAIR.T_ENV_AIRDATA_REGION_DAY
+        WHERE
+        CODE_REGION = '510100000000'
+        AND MONITORTIME >= #{oldStartTime}
+        AND MONITORTIME &lt;= #{oldEndTime}
+        ),
+        0
+        ) AS PM25,
+        ROUND(
+        (
+        SELECT DISTINCT
+        PERCENTILE_CONT ( 0.9 ) WITHIN GROUP ( ORDER BY NO2 ) OVER ( ) AS MedianCont
+        FROM
+        TENVAIR.T_ENV_AIRDATA_REGION_DAY
+        WHERE
+        CODE_REGION = '510100000000'
+        AND MONITORTIME >= #{oldStartTime}
+        AND MONITORTIME &lt;= #{oldEndTime}
+        ),
+        0
+        ) AS NO2,
+        ROUND(
+        (
+        SELECT DISTINCT
+        PERCENTILE_CONT ( 0.9 ) WITHIN GROUP ( ORDER BY SO2 ) OVER ( ) AS MedianCont
+        FROM
+        TENVAIR.T_ENV_AIRDATA_REGION_DAY
+        WHERE
+        CODE_REGION = '510100000000'
+        AND MONITORTIME >= #{oldStartTime}
+        AND MONITORTIME &lt;= #{oldEndTime}
+        ),
+        0
+        ) AS SO2,
+        ROUND(
+        (
+        SELECT DISTINCT
+        PERCENTILE_CONT ( 0.9 ) WITHIN GROUP ( ORDER BY O3_8 ) OVER ( ) AS MedianCont
+        FROM
+        TENVAIR.T_ENV_AIRDATA_REGION_DAY
+        WHERE
+        CODE_REGION = '510100000000'
+        AND MONITORTIME >= #{oldStartTime}
+        AND MONITORTIME &lt;= #{oldEndTime}
+        ),
+        0
+        ) AS O3,
+        ROUND(
+        (
+        SELECT DISTINCT
+        PERCENTILE_CONT ( 0.95 ) WITHIN GROUP ( ORDER BY CO ) OVER ( ) AS MedianCont
+        FROM
+        TENVAIR.T_ENV_AIRDATA_REGION_DAY
+        WHERE
+        CODE_REGION = '510100000000'
+        AND MONITORTIME >= #{oldStartTime}
+        AND MONITORTIME &lt;= #{oldEndTime}
+        ),
+        1
+        ) AS CO
+        FROM
+        TENVAIR.T_ENV_AIRDATA_REGION_DAY
+        WHERE
+        CODE_REGION = '510100000000'
+        AND MONITORTIME >= #{oldStartTime}
+        AND MONITORTIME &lt;= #{oldEndTime}
+    </select>
+
+    <!--获取指定时间数据-->
+    <select id="querySpecifiedTime" resultType="ths.project.analysis.analysisreport.entity.TMonthlyAnalysis">
+        SELECT SUM
+        ( CASE WHEN CODE_AQILEVEL &lt;=2 THEN 1 ELSE 0 END ) AS EXCELLENTAND_GOOD,
+        SUM ( CASE WHEN CODE_AQILEVEL = 1 THEN 1 ELSE 0 END ) AS EXCELLENT,
+        SUM ( CASE WHEN CODE_AQILEVEL = 2 THEN 1 ELSE 0 END ) AS GOOD,
+        CAST (
+        (
+        CONVERT (
+        DECIMAL ( 18, 2 ),
+        SUM ( CASE WHEN AQISTATIONNAME = '优' OR AQISTATIONNAME = '良' THEN 1 ELSE 0 END ) * 1.0 / COUNT ( 1 )
+        ) * 100
+        ) AS VARCHAR ( 50 )
+        ) + '%' AS CORRECT_RATE,
+        SUM ( CASE WHEN CODE_AQILEVEL >= 3 THEN 1 ELSE 0 END ) AS CONTAMINATION_DAYS,
+        SUM ( CASE WHEN CODE_AQILEVEL = 3 THEN 1 ELSE 0 END ) AS LIGHT_POLLUTION,
+        SUM ( CASE WHEN CODE_AQILEVEL = 4 THEN 1 ELSE 0 END ) AS MODERATELY_POLLUTED,
+        SUM ( CASE WHEN CODE_AQILEVEL = 5 THEN 1 ELSE 0 END ) AS HEAVY_POLLUTION,
+        (
+        SELECT
+        stuff(
+        ( SELECT ',' + PRIMARYPOLLUTANT FROM TENVAIR.T_ENV_AIRDATA_REGION_DAY WHERE CODE_REGION = '510100000000' AND MONITORTIME >= #{startTime} AND MONITORTIME &lt;= #{endTime} FOR XML PATH ( '' ) ),
+        1,
+        1,
+        ''
+        )
+        ) AS PRIMARY_POLLUTANT,
+        ROUND(
+        (
+        SELECT DISTINCT
+        PERCENTILE_CONT ( 0.9 ) WITHIN GROUP ( ORDER BY PM10 ) OVER ( ) AS MedianCont
+        FROM
+        TENVAIR.T_ENV_AIRDATA_REGION_DAY
+        WHERE
+        CODE_REGION = '510100000000'
+        AND MONITORTIME >= #{startTime}
+        AND MONITORTIME &lt;=#{endTime}
+        ),
+        0
+        ) AS PM10,
+        ROUND(
+        (
+        SELECT DISTINCT
+        PERCENTILE_CONT ( 0.9 ) WITHIN GROUP ( ORDER BY PM2_5 ) OVER ( ) AS MedianCont
+        FROM
+        TENVAIR.T_ENV_AIRDATA_REGION_DAY
+        WHERE
+        CODE_REGION = '510100000000'
+        AND MONITORTIME >= #{startTime}
+        AND MONITORTIME &lt;=#{endTime}
+        ),
+        0
+        ) AS PM25,
+        ROUND(
+        (
+        SELECT DISTINCT
+        PERCENTILE_CONT ( 0.9 ) WITHIN GROUP ( ORDER BY NO2 ) OVER ( ) AS MedianCont
+        FROM
+        TENVAIR.T_ENV_AIRDATA_REGION_DAY
+        WHERE
+        CODE_REGION = '510100000000'
+        AND MONITORTIME >= #{startTime}
+        AND MONITORTIME &lt;=#{endTime}
+        ),
+        0
+        ) AS NO2,
+        ROUND(
+        (
+        SELECT DISTINCT
+        PERCENTILE_CONT ( 0.9 ) WITHIN GROUP ( ORDER BY SO2 ) OVER ( ) AS MedianCont
+        FROM
+        TENVAIR.T_ENV_AIRDATA_REGION_DAY
+        WHERE
+        CODE_REGION = '510100000000'
+        AND MONITORTIME >= #{startTime}
+        AND MONITORTIME &lt;=#{endTime}
+        ),
+        0
+        ) AS SO2,
+        ROUND(
+        (
+        SELECT DISTINCT
+        PERCENTILE_CONT ( 0.9 ) WITHIN GROUP ( ORDER BY O3_8 ) OVER ( ) AS MedianCont
+        FROM
+        TENVAIR.T_ENV_AIRDATA_REGION_DAY
+        WHERE
+        CODE_REGION = '510100000000'
+        AND MONITORTIME >= #{startTime}
+        AND MONITORTIME &lt;=#{endTime}
+        ),
+        0
+        ) AS O3,
+        ROUND(
+        (
+        SELECT DISTINCT
+        PERCENTILE_CONT ( 0.95 ) WITHIN GROUP ( ORDER BY CO ) OVER ( ) AS MedianCont
+        FROM
+        TENVAIR.T_ENV_AIRDATA_REGION_DAY
+        WHERE
+        CODE_REGION = '510100000000'
+        AND MONITORTIME >= #{startTime}
+        AND MONITORTIME &lt;=#{endTime}
+        ),
+        1
+        ) AS CO
+        FROM
+        TENVAIR.T_ENV_AIRDATA_REGION_DAY
+        WHERE
+        CODE_REGION = '510100000000'
+        AND MONITORTIME >= #{startTime}
+        AND MONITORTIME &lt;=#{endTime}
+    </select>
+</mapper>
+

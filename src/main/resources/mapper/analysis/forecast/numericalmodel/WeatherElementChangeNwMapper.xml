@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<mapper namespace="ths.project.analysis.forecast.numericalmodel.mapper.WeatherElementChangeNwMapper">
+
+    <!--气象逆温数据-->
+    <select id="getWrfDataHourNwList"
+            resultType="java.util.LinkedHashMap">
+        SELECT
+            MODEL,
+            MODEL_TIME,
+            RESULT_TIME,
+            POINT_NAME,
+            MAX(H_67) AS H_67,
+            MAX(H_127) AS H_127,
+            MAX(H_170) AS H_170,
+            MAX(H_256) AS H_256,
+            MAX(H_430) AS H_430,
+            MAX(H_874) AS H_874,
+            MAX(H_1340) AS H_1340,
+            MAX(H_1825) AS H_1825
+        FROM(
+                SELECT
+                    MODEL,
+                    CONVERT (VARCHAR(16),MODEL_TIME,120 ) AS MODEL_TIME,
+                    CONVERT (VARCHAR(16),RESULT_TIME,120 ) AS RESULT_TIME,
+                    POINT_NAME,
+                    CASE WHEN HEIGHT=67 THEN TEMPERATURE END AS H_67,
+                    CASE WHEN HEIGHT=127 THEN TEMPERATURE END AS H_127,
+                    CASE WHEN HEIGHT=170 THEN TEMPERATURE END AS H_170,
+                    CASE WHEN HEIGHT=256 THEN TEMPERATURE END AS H_256,
+                    CASE WHEN HEIGHT=430 THEN TEMPERATURE END AS H_430,
+                    CASE WHEN HEIGHT=874 THEN TEMPERATURE END AS H_874,
+                    CASE WHEN HEIGHT=1340 THEN TEMPERATURE END AS H_1340,
+                    CASE WHEN HEIGHT=1825 THEN TEMPERATURE END AS H_1825
+                FROM AIR_FORECAST.T_WRF_DATA_HOUR_NW
+                WHERE
+                    <choose>
+                        <when test="step !=null and step != ''">
+                            STEP BETWEEN 1 AND ${step}
+                        </when>
+                        <otherwise>
+                            STEP BETWEEN 1 AND 14
+                        </otherwise>
+                    </choose>
+                  <if test="model!=null and model!=''">
+                    AND MODEL=#{model}
+                  </if>
+                  <if test="modelTime!=null and modelTime!=''">
+                    AND MODEL_TIME=#{modelTime}
+                  </if>
+                  <if test="pointCode!=null and pointCode!=''">
+                    AND POINT_CODE=#{pointCode}
+                  </if>
+            ) T
+        GROUP BY MODEL,MODEL_TIME,RESULT_TIME,POINT_NAME
+        ORDER BY RESULT_TIME
+    </select>
+</mapper>

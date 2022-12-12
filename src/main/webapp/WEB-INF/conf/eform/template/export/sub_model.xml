@@ -1,0 +1,79 @@
+package ${exportInfo.modelPackage};
+
+#set($hasDateField = 'false')
+#set($hasBigDecimalField = 'false')
+#foreach($field in $exportInfo.metaFieldList)
+#set($fieldJavaType = ${formTemplateService.getJavaType("${field.fieldDatatype}")})
+#if("${fieldJavaType}" == "Date")
+#set($hasDateField = 'true')
+#end
+#if("${fieldJavaType}" == "BigDecimal")
+#set($hasBigDecimalField = 'true')
+#end
+#end
+#if("${hasDateField}" == "true" || "${hasBigDecimalField}" == "true")
+#if("${hasDateField}" == "true")
+import java.util.Date;
+#end
+#if("${hasBigDecimalField}" == "true")
+import java.math.BigDecimal;
+#end
+
+#end
+/**
+ * $!{exportInfo.tableName} Model类
+ * @author eform4.0
+ * @since ${CREATE_DATE}
+ */
+public class ${exportInfo.modelClassName} {
+
+#foreach($field in $exportInfo.metaFieldList)
+	/**
+	 * ${field.fieldName}
+	 */
+	private ${formTemplateService.getJavaType("${field.fieldDatatype}")} ${formTemplateService.underline2Camel("${field.fieldCode}", true)};
+#end
+#foreach($formCell in $exportInfo.formCellList)
+#if("$!{formCell.shownameMetaField}" == "" && $!{formTemplateService.isCodeNameFormCell("${formCell.formcellTypecode}")} == "true" )
+	/**
+	 * ${formCell.fieldName}显示名称属性
+	 */
+	private String ${formTemplateService.underline2Camel("${formCell.fieldCode}", true)}Name;
+#end
+#end
+
+#foreach($field in $exportInfo.metaFieldList)
+#set($modelFieldCode = ${formTemplateService.underline2Camel("${field.fieldCode}", true)})##
+#set($modelMethodFieldCode = ${formTemplateService.underline2Camel("${field.fieldCode}", false)})##
+	/**
+	 * @return the ${modelFieldCode}
+	 */
+	public ${formTemplateService.getJavaType("${field.fieldDatatype}")} get${modelMethodFieldCode}() {
+		return ${modelFieldCode};
+	}
+	/**
+	 * @param ${modelFieldCode} the ${modelFieldCode} to set
+	 */
+	public void set${modelMethodFieldCode}(${formTemplateService.getJavaType("${field.fieldDatatype}")} ${modelFieldCode}) {
+		this.${modelFieldCode} = ${modelFieldCode};
+	}
+#end
+#foreach($formCell in $exportInfo.formCellList)
+#if("$!{formCell.shownameMetaField}" == "" && $!{formTemplateService.isCodeNameFormCell("${formCell.formcellTypecode}")} == "true" )
+#set($modelFieldCode = ${formTemplateService.underline2Camel("${formCell.fieldCode}", true)})##
+#set($modelMethodFieldCode = ${formTemplateService.underline2Camel("${formCell.fieldCode}", false)})##
+	/**
+	 * @return the ${modelFieldCode}Name
+	 */
+	public String get${modelMethodFieldCode}Name() {
+		return ${modelFieldCode}Name;
+	}
+	/**
+	 * @param ${modelFieldCode}Name the ${modelFieldCode}Name to set
+	 */
+	public void set${modelMethodFieldCode}Name(String ${modelFieldCode}Name) {
+		this.${modelFieldCode}Name = ${modelFieldCode}Name;
+	}
+#end
+#end
+}

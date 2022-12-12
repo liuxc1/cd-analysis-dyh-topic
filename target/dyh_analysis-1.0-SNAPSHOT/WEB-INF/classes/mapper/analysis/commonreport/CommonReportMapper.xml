@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="ths.project.analysis.commonreport.mapper.CommonReportMapper">
+
+    <select id="getReportInfoByAscriptionType" resultType="java.util.Map">
+		SELECT TOP 1
+			A.REPORT_ID,
+			A.REPORT_NAME,
+			A.ASCRIPTION_TYPE,
+			A.REPORT_TIP,
+		    A.STATE,
+		    CONVERT(VARCHAR(10),REPORT_TIME,23) REPORT_TIME,
+		    A.SAMLL_TYPE,
+		    A.REMARK,
+		    A.REPORT_INSCRIBE,
+		    A.ASCRIPTION_TYPE,
+		    A.CREATE_USER,
+			CONVERT(VARCHAR(20),CONTROL_START_TIME,120) CONTROL_START_TIME,
+			CONVERT(VARCHAR(20),CONTROL_END_TIME,120) CONTROL_END_TIME
+		FROM
+			DBO.T_ANS_GENERAL_REPORT A
+		WHERE
+			ASCRIPTION_TYPE=#{ascriptionType}
+		  	AND A.DELETE_FLAG='0'
+			<if test="reportId != null and reportId!=''">
+				AND REPORT_ID=#{reportId}
+			</if>
+		ORDER BY  REPORT_TIME DESC,CREATE_TIME DESC
+	</select>
+	<!--最新时间-->
+	<select id="getNewestDate" resultType="java.util.Map">
+		SELECT
+			CONVERT(VARCHAR(10),getdate(),23) AS endTime,
+			CASE WHEN MAX(REPORT_TIME) IS NULL THEN DATENAME(year,getdate())+'-01-01'
+			ELSE CONVERT(VARCHAR(10),dateadd(year, datediff(year, 0, dateadd(mm,0,MAX(REPORT_TIME))), 0),23)
+			END AS startTime
+		FROM
+			DBO.T_ANS_GENERAL_REPORT
+		WHERE
+			ASCRIPTION_TYPE=#{ascriptionType}
+		  AND DELETE_FLAG='0'
+	</select>
+	<!--列表查询-->
+    <select id="queryReportList" resultType="ths.project.analysis.commonreport.vo.CommonReportVo">
+		SELECT
+		A.REPORT_ID,
+		A.REPORT_NAME,
+		A.ASCRIPTION_TYPE,
+		A.REPORT_TIP,
+		A.REPORT_TIME,
+		A.CREATE_TIME,
+		A.CREATE_USER,
+		A.SAMLL_TYPE,
+		A.STATE
+		FROM
+		DBO.T_ANS_GENERAL_REPORT A
+		WHERE
+		ASCRIPTION_TYPE=#{ascriptionType}
+		AND A.DELETE_FLAG='0'
+		<if test="reportId != null and reportId!=''">
+			AND REPORT_ID=#{reportId}
+		</if>
+		<if test="startTime != null and startTime!=''">
+			AND REPORT_TIME>=CONVERT(DATETIME,#{startTime},120)
+		</if>
+		<if test="endTime != null and endTime!=''">
+			<![CDATA[AND REPORT_TIME<=CONVERT(DATETIME,#{endTime},120)]]>
+		</if>
+		<if test="samllType != null and samllType != ''">
+			AND SAMLL_TYPE=#{samllType}
+		</if>
+		ORDER BY  A.REPORT_TIME DESC,A.CREATE_TIME DESC
+	</select>
+	<!--获取所有小类-->
+	<select id="getSmallType" resultType="ths.project.analysis.commonreport.vo.SamllTypeVo">
+		SELECT DISTINCT
+			SAMLL_TYPE
+		FROM
+		     DBO.T_ANS_GENERAL_REPORT
+		WHERE
+			ASCRIPTION_TYPE=#{ascriptionType}
+			AND SAMLL_TYPE IS NOT NULL
+			AND DELETE_FLAG='0'
+	</select>
+</mapper>
+

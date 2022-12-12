@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <param>
+    	<replace format="request" name="companyid" place="companyid"><![CDATA[]]></replace>
+    	<replace format="request" name="id" place="id"><![CDATA[]]></replace>
+    	<replace format="request" name="belongsdate" place="belongsdate"><![CDATA[]]></replace>
+    	<replace format="request" name="intact" place="intact"><![CDATA[]]></replace>
+    	<replace format="request" name="groupName" place="groupName"><![CDATA[]]></replace>
+    	<replace format="request" name="ctx" place="ctx"><![CDATA[]]></replace>
+        <replace format="sql"     datasource=""><![CDATA[select pro_name  from t_pro_info]]></replace>
+  </param>
+  <topbar isShow="true" default="" style="" url="{ctx}/assets/js/eform/custom_menu/drawer_black/images/0.png"></topbar>
+  <casecard>
+	  <card  key="card1" name="大气环境" bgImage="{ctx}/assets/js/eform/custom_menu/drawer_black/images/1.png" cardType="tab">
+	  	<card  key="tab11" name="小时报"  url="./right.vm" ></card>
+		<card  key="tab12" name="日报" url="./list-simple.vm"></card>
+		<card  key="tab13" name="月报" url="./right.vm"></card>
+	  </card>
+	  <card  key="card2" name="水环境" bgImage="{ctx}/assets/js/eform/custom_menu/drawer_black/images/2.png" cardType="group">
+	  	<card  key="card21" name="水环境1"  cardType="group">
+	  		<card  key="card211" name="水环境11"  cardType="group">
+	  			<card  key="card2111" name="水环境11111111111"  cardType="group">
+	  				<card  key="tab21111" name="小时报"  url="./right.vm" ></card>
+					<card  key="tab21112" name="日报" url="./list-simple.vm"></card>
+	  			</card>
+	  			<card  key="card2112" name="水环境112" cardType="tab">
+	  				<card  key="tab21121" name="小时报"  url="./right.vm" ></card>
+					<card  key="tab21122" name="日报" url="./list-simple.vm" ></card>
+	  			</card>
+	  		</card>
+	  		<card  key="card212" name="水环境12"  cardType="tab">
+	  			<card  key="tab2121" name="小时报"  url="./right.vm" ></card>
+				<card  key="tab2122" name="日报" url="./list-simple.vm"></card>
+	  		</card>
+	  		<card  key="card213" name="水环境13" cardType="tab">
+	  			<card  key="tab2131" name="小时报"  url="./list-simple.vm"></card>
+				<card  key="tab2132" name="日报" url="./right.vm"></card>
+	  		</card>
+	  		<card  key="card214" name="水环境14" cardType="tab">
+	  			<card  key="tab2141" name="小时报"  url="./right.vm" ></card>
+				<card  key="tab2142" name="日报" url="./list-simple.vm"></card>
+	  		</card>
+	 	</card>
+	 	<card  key="card22" name="水环境2"  cardType="group">
+	 		<card  key="card221" name="水环境21"  cardType="tab">
+			  	<card  key="tab221" name="小时报"  url="./right.vm" ></card>
+				<card  key="tab222" name="日报" url="./list-simple.vm"></card>
+			</card>
+	 	</card>
+	 	<card  key="card23" name="水环境3"  cardType="group">
+	 		<card  key="card221" name="水环境21"  cardType="tab">
+			  	<card  key="tab221" name="小时报"  url="./right.vm" ></card>
+				<card  key="tab222" name="日报" url="./list-simple.vm"></card>
+			</card>
+	 	</card>
+	 	<card  key="card24" name="水环境4"  cardType="group">
+	 		<card  key="card221" name="水环境21"  cardType="group">
+			  	<card  key="tab221" name="小时报"  url="./right.vm" ></card>
+				<card  key="tab222" name="日报" url="./list-simple.vm" ></card>
+			</card>
+	 	</card>
+	  </card>
+	  <card  key="card3" name="固废危废" bgImage="{ctx}/assets/js/eform/custom_menu/drawer_black/images/3.png" cardType="group">
+	  	<card  key="card31" name="固废危废1" cardType="tab">
+		  	<card  key="tab311" name="小时报"  url="./right.vm"></card>
+			<card  key="tab312" name="日报" url="./list-simple.vm"></card>
+	 	</card>
+	 	<card  key="card32" name="固废危废2" cardType="tab">
+		  	<card  key="tab321" name="小时报"  url="./right.vm"></card>
+			<card  key="tab322" name="日报" url="./list-simple.vm"></card>
+	 	</card>
+	  </card>
+	  <card  key="card4" name="污染源" bgImage="{ctx}/assets/js/eform/custom_menu/drawer_black/images/4.png" cardType="tab">
+	  	<card  key="tab41" name="小时报"  url="./right.vm"></card>
+		<card  key="tab42" name="日报" url="./list-simple.vm"></card>
+	  </card>
+	   <card  key="card5" name="核与辐射" bgImage="{ctx}/assets/js/eform/custom_menu/drawer_black/images/5.png" cardType="tab">
+	  	<card  key="tab51" name="小时报"  url="./right.vm"></card>
+		<card  key="tab52" name="日报" url="./list-simple.vm"></card>
+	  </card>
+  </casecard>
+  <nodecard>
+  	 <node  key="33" descr="立案登记"  	show="card1,tab11,tab12,card2,card21,card211,card2111,tab21111" 
+			      						edit="tab21111" 
+	></node>
+  </nodecard>
+</root>

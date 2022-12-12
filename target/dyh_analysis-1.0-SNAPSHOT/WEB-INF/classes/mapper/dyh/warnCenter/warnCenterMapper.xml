@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="ths.project.dyh.consultation.mapper.WarnCenterMapper">
+
+<!--    查询列表数据-->
+    <select id="listTable" parameterType="java.util.Map" resultType="java.util.Map">
+        SELECT
+            PKID,
+            WARN_TIME,
+            POINT_TYPE,
+            POINT_CODE,
+            POINT_NAME,
+            WARN_TYPE,
+            REGION_CODE,
+            REGION_NAME,
+            WARN_DETAIL,
+            WARN_SOURCE,
+            LONGITUDE,
+            LATTITUDE,
+            TASK_ID
+        FROM
+            dbo.T_WARN_BASEINFO
+        <where>
+            <if test="WARN_SOURCE !=null and WARN_SOURCE !=''">
+                AND WARN_SOURCE = #{WARN_SOURCE}
+            </if>
+            <if test="WARN_TIME !=null and WARN_TIME !=''">
+                AND WARN_TIME >= #{WARN_TIME} and WARN_TIME &lt;dateadd(day,1,#{WARN_TIME})
+            </if>
+            <if test="POINT_TYPE !=null and POINT_TYPE !=''">
+                AND POINT_TYPE = #{POINT_TYPE}
+            </if>
+            <if test="REGION_CODE !=null and REGION_CODE !=''">
+                AND REGION_CODE = #{REGION_CODE}
+            </if>
+            <if test="POINT_TYPES !=null and POINT_TYPES !=''">
+                <foreach collection="POINT_TYPES.split(',')" item="POINT_TYPE" open="AND POINT_TYPE IN (" separator="," close=")">
+                    #{POINT_TYPE}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+</mapper>

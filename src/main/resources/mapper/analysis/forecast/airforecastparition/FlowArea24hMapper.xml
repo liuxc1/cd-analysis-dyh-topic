@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="ths.project.analysis.forecast.airforecastparition.mapper.FlowArea24hMapper">
+	<!-- 分区预报24小时数据列表 -->
+	<select id="getArea24hData" resultType="java.util.Map" parameterType="java.util.Map">
+		select * from dbo.T_ANS_FLOW_AREA_24H where AREA_PKID =#{PKID}
+	</select>
+</mapper>

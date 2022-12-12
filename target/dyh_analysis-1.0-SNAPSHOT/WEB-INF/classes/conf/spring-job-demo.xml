@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns="http://www.springframework.org/schema/beans"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+
+    <!-- 使用MethodInvokingJobDetailFactoryBean，任务类可以不实现Job接口，通过targetMethod指定调用方法-->
+<!--    <bean id="jobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">-->
+<!--        <property name="group" value="job_work"/>-->
+<!--        <property name="name" value="job_work_name"/>-->
+<!--        &lt;!&ndash;false表示等上一个任务执行完后再开启新的任务&ndash;&gt;-->
+<!--        <property name="concurrent" value="false"/>-->
+<!--        <property name="targetObject" ref="jobDemo"/>-->
+<!--        <property name="targetMethod" value="run"/>-->
+<!--    </bean>-->
+
+    <!--  调度触发器 -->
+<!--    <bean id="myTrigger"-->
+<!--          class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">-->
+<!--        <property name="name" value="work_default_name"/>-->
+<!--        <property name="group" value="work_default"/>-->
+<!--        <property name="jobDetail" ref="jobDetail"/>-->
+<!--        <property name="cronExpression" value="0/5 * * * * ?"/>-->
+<!--    </bean>-->
+</beans>

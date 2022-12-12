@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="ths.project.analysis.forecast.airforecastcity.mapper.AirForecastCityMapper">
+	<!-- 获取AQI、首要污染物等具体信息 -->
+	<select id="getForecastValueList" resultType="java.util.Map">
+		SELECT #{datetime} CREATE_TIME,CONVERT(VARCHAR(10),DATETIME,120) RESULT_TIME
+			 , POINT_CODE, POINT_NAME, AQI, AQI_LEVEL, PRIM_POLLUTE,WEATHER_LEVEL,CONTROL_TARGET,PM25,O3,AQI_MEDIAN, PM25_MEDIAN, O3_MEDIAN,AQI_MIN, AQI_MAX, PM25_MIN, PM25_MAX, O3_MIN, O3_MAX,
+		       PM25_IAQI,PM25_MIN_IAQI,PM25_MAX_IAQI,O3_IAQI,O3_MIN_IAQI,O3_MAX_IAQI
+		FROM (
+				 SELECT DATEADD(DAY,NUMBER,CONVERT(DATETIME,#{datetime},120)) DATETIME
+				 FROM MASTER..SPT_VALUES N
+				 WHERE N.TYPE = 'P'
+			<![CDATA[ AND N.NUMBER BETWEEN 1 AND 7   ]]>
+		) A LEFT JOIN (
+			SELECT PKID, CONVERT(VARCHAR(20),CREATE_TIME,23) CREATE_TIME, CONVERT(VARCHAR(20),RESULT_TIME,23) RESULT_TIME,
+				   POINT_CODE, POINT_NAME, AQI,PM25,O3, AQI_LEVEL, PRIM_POLLUTE,WEATHER_LEVEL,CONTROL_TARGET,AQI_MEDIAN, PM25_MEDIAN, O3_MEDIAN,AQI_MIN, AQI_MAX, PM25_MIN, PM25_MAX, O3_MIN, O3_MAX,PM25_IAQI,PM25_MIN_IAQI,PM25_MAX_IAQI,O3_IAQI,O3_MIN_IAQI,O3_MAX_IAQI
+			FROM dbo.T_ANS_FLOW_WQ_ROW
+			WHERE 1=1 AND INFO_ID=#{reportId}
+		) B ON A.DATETIME=B.RESULT_TIME
+		ORDER BY RESULT_TIME ASC
+	</select>
+
+	<!--将污染物的值转成iaqi然后加减15再转回浓度值-->
+	<select id="getpollutantRange" resultType="java.util.Map">
+		<![CDATA[
+		SELECT iAqi,
+			   case when iAqi < 15 then 1 else AIR_FORECAST.GETCONCENBYIAQI ( iAqi - 15,#{ type } ) end minNum,
+			   case when iAqi < 15 then AIR_FORECAST.GETCONCENBYIAQI ( iAqi*2,#{ type } ) else AIR_FORECAST.GETCONCENBYIAQI ( iAqi + 15,#{ type } ) end maxNum,
+			   case when iAqi < 15 then 1 else iaqi - 15 end minMedian,
+			   case when iAqi < 15 then iAqi*2 else iAqi+15 end maxMedian
+		FROM (
+				 SELECT AIR_FORECAST.GETPOLLUTEAQI2 ( #{ numMedian }, #{ type }) iAqi
+			 ) A
+		 ]]>
+	</select>
+
+
+	<select id="queryUserPhone" resultType="java.util.Map">
+		SELECT tel FROM person_type A LEFT JOIN person B ON A.person_id = B.id
+		WHERE send_type_enum = #{SEND_TYPE_ENUM}
+	</select>
+</mapper>
+

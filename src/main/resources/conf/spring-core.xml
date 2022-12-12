@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns="http://www.springframework.org/schema/beans"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans 
+		http://www.springframework.org/schema/beans/spring-beans.xsd 
+		http://www.springframework.org/schema/context 
+		http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/aop
+		http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <context:annotation-config/>
+    <context:component-scan base-package="ths">
+        <context:exclude-filter expression="org.springframework.stereotype.Controller" type="annotation"/>
+        <context:exclude-filter expression="org.springframework.web.bind.annotation.ControllerAdvice"
+                                type="annotation"/>
+    </context:component-scan>
+
+    <!--加载全局配置文件 -->
+    <bean id="propertyConfigure" class="ths.project.common.config.CustomPropertyConfigure">
+        <property name="locationPaths">
+            <list>
+                <value>classpath:conf/context.properties</value>
+            </list>
+        </property>
+        <!--此属性用于指定文件编码-->
+        <property name="fileEncoding" value="UTF-8"/>
+    </bean>
+    <!-- 配置Spring容器启动监听器 -->
+    <bean id="appSpringEventListener" class="ths.jdp.project.listener.AppSpringEventListener"/>
+
+    <bean id="snowflakeIdGenerator" class="ths.project.common.uid.impl.DefaultSnowflakeIdGenerator">
+        <property name="stringIdPrefix" value="${snowflake.id.prefix}"/>
+        <property name="workerId" value="${snowflake.workerid}"/>
+    </bean>
+
+    <!-- aop配置 -->
+    <aop:aspectj-autoproxy proxy-target-class="true"/>
+</beans>

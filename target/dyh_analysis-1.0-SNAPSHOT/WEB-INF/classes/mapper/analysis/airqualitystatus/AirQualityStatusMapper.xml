@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 空气质量现状 -->
+<mapper namespace="ths.project.analysis.airqualitystatus.mapper.AirQualityStatusMapper">
+    <!-- 获取专家预报核对数据 -->
+    <select id="queryMaxDate" resultType="java.util.Map">
+        SELECT
+            ISNULL("dateHourTime", CONVERT ( VARCHAR ( 14 ), getdate() , 120 )+'00') AS "dateHourTime",
+            ISNULL("dateDayTime", CONVERT ( VARCHAR ( 10 ), getdate() , 23 )) AS "dateDayTime"
+        FROM(
+                SELECT CONVERT ( VARCHAR ( 16 ), MAX ( MONITORTIME )-2.0/24, 120 ) AS "dateHourTime" FROM TENVAIR.T_ENV_AIRDATA_REGION_HOUR WHERE CODE_REGION = '510100000000'
+            ) A
+                INNER JOIN (
+            SELECT CONVERT ( VARCHAR ( 10 ), MAX ( MONITORTIME ), 23 ) AS "dateDayTime" FROM TENVAIR.T_ENV_AIRDATA_REGION_DAY WHERE CODE_REGION = '510100000000'
+        ) B ON 1 =1
+    </select>
+</mapper>

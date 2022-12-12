@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="ths.project.analysis.forecast.airforecastmonth.mapper.MonthTrendMapper">
+
+    <!-- 获取AQI、首要污染物等具体信息 ,生成固定时间段的列表-->
+    <select id="getForecastValues" resultType="java.util.Map">
+        <choose>
+            <when test="FORECAST_ID != null and FORECAST_ID != ''">
+                SELECT convert(varchar(10), RESULT_TIME1, 120) as RESULT_TIME1, LEVEL1, LEVEL2, convert(varchar(10),
+                RESULT_TIME2, 120) as RESULT_TIME2, LEVEL3, LEVEL4, convert(varchar(10), RESULT_TIME3, 120) as
+                RESULT_TIME3, LEVEL5, LEVEL6
+                FROM dbo.T_ANS_MONTH_FORECAST
+                WHERE ASCRIPTION_ID = #{FORECAST_ID}
+                ORDER BY RESULT_TIME1
+            </when>
+            <otherwise>
+                select
+                convert(varchar(10), dateadd(d, number, dateadd(dd, -day(CONVERT(DATETIME,#{datetime},120)) + 1,
+                CONVERT(DATETIME,#{datetime},120))), 120) AS RESULT_TIME1,
+                '' as LEVEL1,
+                '' as LEVEL2,
+                convert(varchar(10), dateadd(d, number, dateadd(dd, -day(CONVERT(DATETIME,#{datetime},120)) + 12,
+                CONVERT(DATETIME,#{datetime},120))), 120) AS RESULT_TIME2,
+                '' as LEVEL3,
+                '' as LEVEL4,
+                convert(varchar(10), case when datename(mm, dateadd(d, number, dateadd(dd,
+                -day(CONVERT(DATETIME,#{datetime},120)) + 23, CONVERT(DATETIME,#{datetime},120)))) = datename(mm,
+                CONVERT(DATETIME,#{datetime},120)) then dateadd(d, number, dateadd(dd,
+                -day(CONVERT(DATETIME,#{datetime},120)) + 23, CONVERT(DATETIME,#{datetime},120))) else null end, 120) as
+                RESULT_TIME3,
+                '' as LEVEL5,
+                '' as LEVEL6
+                from master..spt_values
+                where type = 'p' and number between 0 and 10
+            </otherwise>
+        </choose>
+    </select>
+    <!-- 导出-->
+    <select id="getForecastValuesExecl" resultType="java.util.LinkedHashMap">
+                SELECT
+                    isNull(CONVERT( VARCHAR ( 10 ), RESULT_TIME1, 120 ), '' )  AS RESULT_TIME1,
+                    isNull(LEVEL1, '' ) LEVEL1,
+                    isNull(LEVEL2, '' ) LEVEL2,
+                    isNull(CONVERT ( VARCHAR ( 10 ), RESULT_TIME2, 120 ), '' )  AS RESULT_TIME2,
+                    isNull(LEVEL3, '' ) LEVEL3,
+                    isNull(LEVEL4, '' ) LEVEL4,
+                    isNull(CONVERT ( VARCHAR ( 10 ), RESULT_TIME3, 120 ), '' )  AS RESULT_TIME3,
+                    isNull( LEVEL5, '' ) LEVEL5,
+                    isNull(LEVEL6, '' )  LEVEL6
+                FROM dbo.T_ANS_MONTH_FORECAST
+                WHERE ASCRIPTION_ID = #{FORECAST_ID}
+                ORDER BY RESULT_TIME1
+    </select>
+
+    <!-- 根据报告ID，查询趋势预报AQI信息 -->
+    <select id="queryMonthForecastByReportId" resultType="map">
+		SELECT PKID,
+			   CONVERT(VARCHAR, CREATE_TIME, 23) CREATE_TIME,
+			   CONVERT(VARCHAR, RESULT_TIME, 23) RESULT_TIME,
+			   POINT_CODE,
+			   POINT_NAME,
+			   AQI,
+			   AQI_LEVEL,
+			   PRIM_POLLUTE,
+			   WEATHER_TREND,
+			   WEATHER_LEVEL
+		 FROM dbo.T_ANS_FLOW_WQ_ROW 
+		 WHERE INFO_ID = #{reportId}
+		 ORDER BY RESULT_TIME ASC
+	</select>
+
+    <!-- 写入AQI、首要污染物等具体信息 -->
+    <insert id="addForecastValues">
+        INSERT INTO dbo.T_ANS_MONTH_FORECAST(
+        <trim suffixOverrides=",">
+            FORECAST_ID,
+            ASCRIPTION_TYPE,
+            ASCRIPTION_ID,
+            CITY_CODE,
+            CITY_NAME,
+            MODEL_TIME,
+            <if test="RESULT_TIME1 != null and RESULT_TIME1 != ''">RESULT_TIME1,</if>
+            <if test="LEVEL1 != null and LEVEL1 != ''">LEVEL1,</if>
+            <if test="LEVEL2 != null and LEVEL2 != ''">LEVEL2,</if>
+            <if test="RESULT_TIME2 != null and RESULT_TIME2 != ''">RESULT_TIME2,</if>
+            <if test="LEVEL3 != null and LEVEL3 != ''">LEVEL3,</if>
+            <if test="LEVEL4 != null and LEVEL4 != ''">LEVEL4,</if>
+            <if test="RESULT_TIME3 != null and RESULT_TIME3 != ''">RESULT_TIME3,</if>
+            <if test="LEVEL5 != null and LEVEL5 != ''">LEVEL5,</if>
+            <if test="LEVEL6 != null and LEVEL6 != ''">LEVEL6,</if>
+            <if test="CREATE_TIME != null and CREATE_TIME != ''">CREATE_TIME,</if>
+            <if test="CREATE_DEPT != null and CREATE_DEPT != ''">CREATE_DEPT,</if>
+            <if test="CREATE_USER != null and CREATE_USER != ''">CREATE_USER,</if>
+            <if test="EDIT_TIME != null and EDIT_TIME != ''">EDIT_TIME,</if>
+            <if test="EDIT_USER != null and EDIT_USER != ''">EDIT_USER,</if>
+        </trim>
+        ) VALUES (
+        <trim suffixOverrides=",">
+            REPLACE(NEWID(),'-',''),
+            #{ASCRIPTION_TYPE},
+            #{ASCRIPTION_ID},
+            #{CITY_CODE},
+            #{CITY_NAME},
+            #{MODEL_TIME},
+            <if test="RESULT_TIME1 != null and RESULT_TIME1 != ''">#{RESULT_TIME1},</if>
+            <if test="LEVEL1 != null and LEVEL1 != ''">#{LEVEL1},</if>
+            <if test="LEVEL2 != null and LEVEL2 != ''">#{LEVEL2},</if>
+            <if test="RESULT_TIME2 != null and RESULT_TIME2 != ''">#{RESULT_TIME2},</if>
+            <if test="LEVEL3 != null and LEVEL3 != ''">#{LEVEL3},</if>
+            <if test="LEVEL4 != null and LEVEL4 != ''">#{LEVEL4},</if>
+            <if test="RESULT_TIME3 != null and RESULT_TIME3 != ''">#{RESULT_TIME3},</if>
+            <if test="LEVEL5 != null and LEVEL5 != ''">#{LEVEL5},</if>
+            <if test="LEVEL6 != null and LEVEL6 != ''">#{LEVEL6},</if>
+            <if test="CREATE_TIME != null and CREATE_TIME != ''">#{CREATE_TIME},</if>
+            <if test="CREATE_DEPT != null and CREATE_DEPT != ''">#{CREATE_DEPT},</if>
+            <if test="CREATE_USER != null and CREATE_USER != ''">#{CREATE_USER},</if>
+            <if test="EDIT_TIME != null and EDIT_TIME != ''">#{EDIT_TIME},</if>
+            <if test="EDIT_USER != null and EDIT_USER != ''">#{EDIT_USER},</if>
+        </trim>
+        )
+    </insert>
+
+    <!-- 删除AQI、首要污染物等具体信息 -->
+    <delete id="deleteForecastValues">
+		delete from dbo.T_ANS_MONTH_FORECAST
+		where ASCRIPTION_ID = #{reportId}
+	</delete>
+
+    <!-- 查询Excel导入的临时数据 -->
+    <select id="queryExcel" resultType="java.util.Map">
+        SELECT
+        datename(year,getdate()) + '-' + RESULT_TIME1 as RESULT_TIME1,
+        LEVEL1,
+        LEVEL2,
+        datename(year,getdate()) + '-' + RESULT_TIME2 as RESULT_TIME2,
+        LEVEL3,
+        LEVEL4,
+        datename(year,getdate()) + '-' + RESULT_TIME3 as RESULT_TIME3,
+        LEVEL5,
+        LEVEL6
+        FROM dbo.T_ANS_MONTH_FORECAST_TEMP
+        WHERE 1=1
+        <if test="FORECAST_ID!=null and FORECAST_ID!=''">
+            AND FORECAST_ID = #{FORECAST_ID}
+        </if>
+        <if test="LOGINNAME!=null and LOGINNAME!=''">
+            AND CREATE_USER = #{LOGINNAME}
+        </if>
+        ORDER BY RESULT_TIME1
+    </select>
+
+    <!-- 删除AQI、首要污染物等具体信息 -->
+    <delete id="deleteForecastTempById" parameterType="java.util.Map">
+        DELETE FROM DBO.T_ANS_MONTH_FORECAST_TEMP
+        WHERE 1=1
+        <if test="FORECAST_ID!=null and FORECAST_ID!=''">
+            AND FORECAST_ID = #{FORECAST_ID}
+        </if>
+        <if test="LOGINNAME!=null and LOGINNAME!=''">
+            AND CREATE_USER = #{LOGINNAME}
+        </if>
+    </delete>
+</mapper>
+

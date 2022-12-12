@@ -1,0 +1,12 @@
+##多选群组
+${t}<div class="input-group">
+${t}	<input type="hidden" id="${modelFieldCodeParam}$!{modelFieldCodeIndex}"#if("$!{controlFormCell.pFormcellId}" == "") name="${modelFieldCodeParam}"#end#if(${showValueAttribute} == "true") value="${elParam}{${modelFieldCodeValueParam}}" oldValue="${elParam}{${modelFieldCodeValueParam}}"#end/>
+${t}	<input type="text" class="form-control" id="${modelFieldCodeNameParam}$!{modelFieldCodeIndex}"#if("$!{controlFormCell.pFormcellId}" == "") name="${modelFieldCodeNameParam}"#end readonly="readonly"
+${t}			#if(${showValueAttribute} == "true")value="${elParam}{${modelFieldCodeNameValueParam}}" oldValue="${elParam}{${modelFieldCodeNameValueParam}}"#end#if("$!{controlFormCell.formcellMessage}" != "") placeholder="$!{controlFormCell.formcellMessage}"#end#if("$!{controlFormCell.dataValidateEngine}" != "") data-validation-engine="$!{controlFormCell.dataValidateEngine}"#end#if("$!controlFormCell.formcellReadonly" != "true") onclick="jdp_eform_openGroup(this, '2', '$!{controlFormCell.formcellDescr}', '$!{controlFormCell.formcellOpenwidth}', '$!{controlFormCell.formcellOpenheight}')"#end/>
+${t}	<span class="input-group-btn">
+${t}		<button type="button" class="btn btn-white btn-default"
+${t}	    		onclick="jdp_eform_clearValue(this)">
+${t}			<i class="ace-icon fa fa-remove"></i>
+${t}		</button>
+${t}	</span>
+${t}</div>

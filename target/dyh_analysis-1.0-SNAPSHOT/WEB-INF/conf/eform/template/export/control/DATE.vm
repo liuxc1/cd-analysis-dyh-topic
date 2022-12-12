@@ -1,0 +1,10 @@
+##日期
+${t}<div class="input-group">
+${t}	<input type="text" class="form-control" id="${modelFieldCodeParam}$!{modelFieldCodeIndex}"#if("$!{controlFormCell.pFormcellId}" == "") name="${modelFieldCodeParam}"#end readonly="readonly"
+${t}			#if(${showValueAttribute} == "true")value="<fmt:formatDate value="${elParam}{${modelFieldCodeValueParam}}" pattern="$!{controlFormCell.formcellDatetype}"/>" oldValue="<fmt:formatDate value="${elParam}{${modelFieldCodeValueParam}}" pattern="$!{controlFormCell.formcellDatetype}"/>"#end#if("$!{controlFormCell.formcellMessage}" != "") placeholder="$!{controlFormCell.formcellMessage}"#end#if("$!{controlFormCell.dataValidateEngine}" != "") data-validation-engine="$!{controlFormCell.dataValidateEngine}"#end#if("$!controlFormCell.formcellReadonly" != "true") onclick="WdatePicker({el:'${modelFieldCodeParam}$!{modelFieldCodeIndex}', dateFmt:'$!{controlFormCell.formcellDatetype}'});"#end#if("$!{controlFormCell.formcellHeight}" != "") style="height: ${controlFormCell.formcellHeight};"#end/>
+${t}	<span class="input-group-btn">
+${t}  		<button type="button" class="btn btn-white btn-default" #if("$!controlFormCell.formcellReadonly" != "true")onclick="WdatePicker({el:'${modelFieldCodeParam}$!{modelFieldCodeIndex}', dateFmt:'$!{controlFormCell.formcellDatetype}'});"#end #if("$!{controlFormCell.formcellStyle}" != "")style="height: ${controlFormCell.formcellStyle};"#end>
+${t}      		<i class="ace-icon fa fa-calendar"></i>
+${t}       	</button>
+${t}	</span>
+${t}</div>

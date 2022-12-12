@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="ths.project.api.satelliteRemoteSensing.mapper.SatelliteRemoteSensingMapper">
+
+    <select id="querySatelliteRemoteSensing" parameterType="java.util.Map" resultType="java.util.HashMap">
+    SELECT
+	A.HCHOIMGPATH,
+	A.NO2IMGPATH,
+	A.HCHONO2IMGPATH,
+	B.PM10IMGPATH
+FROM
+	(
+	SELECT
+		A.HCHOIMGPATH,
+		A.NO2IMGPATH,
+		B.HCHONO2IMGPATH
+	FROM
+		(
+		SELECT
+			A.HCHOIMGPATH,
+			B.NO2IMGPATH
+		FROM
+			(
+			SELECT TOP
+				1 IMAGE_SAVE_PATH AS HCHOIMGPATH
+			FROM
+				dbo.T_COMM_IMAGE
+			WHERE
+				DELETE_FLAG = 0
+				AND (
+					ASCRIPTION_ID = (
+					SELECT
+						ASCRIPTION_ID
+					FROM
+						[dbo].[T_COMM_FILE]
+					WHERE
+						ASCRIPTION_TYPE = 'SRSM_HCHO'
+						AND CREATE_TIME = ( SELECT MAX ( CREATE_TIME ) FROM [dbo].[T_COMM_FILE] WHERE ASCRIPTION_TYPE = 'SRSM_HCHO' )
+					)
+				)
+			ORDER BY
+				CREATE_TIME DESC
+			) A
+			LEFT JOIN (
+			SELECT TOP
+				1 IMAGE_SAVE_PATH AS NO2IMGPATH
+			FROM
+				dbo.T_COMM_IMAGE
+			WHERE
+				DELETE_FLAG = 0
+				AND (
+					ASCRIPTION_ID = (
+					SELECT
+						ASCRIPTION_ID
+					FROM
+						[dbo].[T_COMM_FILE]
+					WHERE
+						ASCRIPTION_TYPE = 'SRSM_NO2'
+						AND CREATE_TIME = ( SELECT MAX ( CREATE_TIME ) FROM [dbo].[T_COMM_FILE] WHERE ASCRIPTION_TYPE = 'SRSM_NO2' )
+					)
+				)
+			ORDER BY
+				CREATE_TIME DESC
+			) B ON 1 = 1
+		) A
+		LEFT JOIN (
+		SELECT TOP
+			1 IMAGE_SAVE_PATH AS HCHONO2IMGPATH
+		FROM
+			dbo.T_COMM_IMAGE
+		WHERE
+			DELETE_FLAG = 0
+			AND (
+				ASCRIPTION_ID = (
+				SELECT
+					ASCRIPTION_ID
+				FROM
+					[dbo].[T_COMM_FILE]
+				WHERE
+					ASCRIPTION_TYPE = 'SRSM-HCHO/NO2'
+					AND CREATE_TIME = ( SELECT MAX ( CREATE_TIME ) FROM [dbo].[T_COMM_FILE] WHERE ASCRIPTION_TYPE = 'SRSM-HCHO/NO2' )
+				)
+			)
+		ORDER BY
+			CREATE_TIME DESC
+		) B ON 1 = 1
+	) A
+	LEFT JOIN (
+	SELECT TOP
+		1 IMAGE_SAVE_PATH AS PM10IMGPATH
+	FROM
+		dbo.T_COMM_IMAGE
+	WHERE
+		DELETE_FLAG = 0
+		AND (
+			ASCRIPTION_ID = (
+			SELECT
+				ASCRIPTION_ID
+			FROM
+				[dbo].[T_COMM_FILE]
+			WHERE
+				ASCRIPTION_TYPE = 'SADF-PM10'
+				AND CREATE_TIME = ( SELECT MAX ( CREATE_TIME ) FROM [dbo].[T_COMM_FILE] WHERE ASCRIPTION_TYPE = 'SADF-PM10' )
+			)
+		)
+	ORDER BY
+	CREATE_TIME DESC
+	) B ON 1 =1
+    </select>
+</mapper>

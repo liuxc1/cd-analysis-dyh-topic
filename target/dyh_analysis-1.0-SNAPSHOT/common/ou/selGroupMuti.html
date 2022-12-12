@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+     <!--浏览器兼容性设置-->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <meta charset="utf-8"/>
+    <title>选择</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+ 	<script src="../../assets/components/juicer/juicer-min.js"></script>
+ 	
+    <!-- bootstrap & fontawesome -->
+    <link rel="stylesheet" href="../../assets/css/common/bootstrap.css"/>
+    <link rel="stylesheet" href="../../assets/components/font-awesome/css/font-awesome.css"/>
+
+    <!-- page plugin css -->
+    <!--zTree-->
+    <link rel="stylesheet" href="../../assets/components/zTree/css/metroStyle/metroStyle.css"/>
+    <link rel="stylesheet" href="../../assets/components/chosen/chosen.css"/>
+
+    <!-- ace styles -->
+    <link rel="stylesheet" href="../../assets/css/common/ace.css" class="ace-main-stylesheet" id="main-ace-style"/>
+
+    <!--[if lte IE 9]>
+    <link rel="stylesheet" href="../../assets/css/common/ace-part2.css" class="ace-main-stylesheet"/>
+    <![endif]-->
+    
+
+    <!--[if lte IE 9]>
+    <link rel="stylesheet" href="../../assets/css/common/ace-ie.css"/>
+    <![endif]-->
+
+    <!--THS CSS 插件-->
+    <link rel="stylesheet" href="../../assets/css/common/ths-custom.css"/>
+
+    
+    <!-- 自己写的CSS，请放在这里 -->
+    <style type="text/css">
+ .widget-box{
+            margin: 0px !important;
+            margin-top: -3px !important;
+        }
+        .widget-box.transparent > .widget-header {
+            border-bottom: 1px solid #C5D0DC !important;
+        }
+        .widget-box.transparent > .widget-header {
+            border-bottom: 1px solid #C5D0DC !important;
+        }
+        .widget-box.transparent > .widget-body{
+            border-right: 1px solid #C5D0DC !important;
+        }
+       @font-face {
+		  font-family: 'FontAwesome';
+		  src: url('../../assets/ace/fonts/fontawesome-webfont.eot?v=4.5.0');
+		  src: url('../../assets/ace/fonts/fontawesome-webfont.eot?#iefix&v=4.5.0') format('embedded-opentype'), 
+		  url('../../assets/ace/fonts/fontawesome-webfont.woff2?v=4.5.0') format('woff2'), 
+		  url('../../assets/ace/onts/fontawesome-webfont.woff?v=4.5.0') format('woff'), 
+		  url('../../assets/ace/fonts/fontawesome-webfont.ttf?v=4.5.0') format('truetype'), 
+		  url('../../assets/ace/fonts/fontawesome-webfont.svg?v=4.5.0#fontawesomeregular') format('svg');
+		  font-weight: normal;
+		  font-style: normal;
+		}
+      
+.ztree li span.button.org_ico_open,.ztree li span.button.org_ico_close {
+	
+}
+
+.ztree li span.button.org_ico_open,
+.ztree li span.button.org_ico_close,
+.ztree li span.button.org_ico_docu,
+.ztree li span.button.ico_open,
+.ztree li span.button.ico_close,
+.ztree li span.button.ico_docu
+	{
+	background-image: none !important;
+	*background-image: none !important;
+}
+
+.ztree li span.button:after,.ztree li span.button:after,.ztree li span.button:after
+	{
+	width: 1.25em;
+	margin-top:3px;
+	text-align: center;
+	display: inline-block;
+	font: normal normal normal 14px/1 FontAwesome;
+	font-size: 15px;
+	text-rendering: auto;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+.ztree li span.button.org_ico_open:after,.ztree li span.button.org_ico_close:after,.ztree li span.button.org_ico_docu:after
+	{
+	content: "  \f0e8";
+}
+
+.ztree li span.button.ico_close:after,.ztree li span.button.ico_docu:after
+	{
+	content: "  \f114";
+}
+
+.ztree li span.button.ico_open:after {
+	content: "  \f115";
+}
+        .widget-body .table thead:first-child tr {
+ 			 background: #F2F2F2 !important; 
+		}
+    </style>
+    
+    
+    <!-- HTML5shiv and Respond.js for IE8 to support HTML5 elements and media queries -->
+
+    <!--[if lte IE 8]>
+    <script src="../../assets/components/html5shiv/dist/html5shiv.min.js"></script>
+    <script src="../../assets/components/respond/dest/respond.min.js"></script>
+    <![endif]-->
+</head>
+
+<body class="no-skin">
+<div id="saving"  class="center" style="position: absolute;z-index: 1000; width: 100%; height:520px; display: none; background:rgba(0, 0, 0, 0.1) ">
+<i id="loading1" class="ace-icon fa fa-spinner fa-spin orange bigger-200" style="margin-top:50px"></i>
+</div>
+<div class="main-container" id="main-container">
+    <div class="main-content">
+        <div class="main-content-inner padding-page-content">
+
+                <div class="col-xs-12 no-padding">
+                    <div class="col-xs-4 no-padding">
+                        <div class="widget-box transparent">
+                            <div class="widget-header">
+                                <div class="widget-toolbar no-border pull-left ">
+                                    <label class="pos-rel" style="line-height: 30px;">
+                                       <input type="checkbox" class="ace"   id="cbShowChildOrg" />
+                                        <span class="lbl grey">显示子组织</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div id="divTreeWidget" class="widget-body" style="margin-right: -1px;overflow: auto; height: 460px">
+                                <div class="widget-main padding-2" >
+                                       <ul id="treeDept" class="ztree no-padding"></ul>
+                                </div>
+                            </div>
+                            
+                        </div>
+
+                    </div>
+                    <div class="col-xs-8  no-padding">
+                        <div class="widget-box transparent">
+                            <div class="widget-header">
+                                <div class="widget-toolbar no-border ">
+                                    <button  type="button" class="btn btn-xs    btn-xs-ths" id="btnOK" >
+                                        <i class="ace-icon fa fa-check"></i>
+                                        确定
+                                    </button>
+                                    <button  type="button" class="btn btn-xs  btn-xs-ths" id="btnCancel" >
+                                        <i class="ace-icon fa fa-times"></i>
+                                        取消
+                                    </button>
+
+                                </div>
+                            </div>
+
+                            <div  class="widget-body" style="margin-right: -1px;overflow: auto">
+                                <div class="widget-main padding-2">
+                                    <div id="divSelect" class="chosen-container chosen-container-multi width-100" style="border-bottom: solid 1px #D5D5D5; height: 65px;overflow-y: auto">
+                                        <ul id="selectList" class="chosen-choices"  style="border: none; background-image: none">
+
+                                        </ul>
+                                    </div>
+                                    <div class="col-xs-12 form-horizontal">
+										<div class="form-group padding-12" style="margin-bottom: 4px; margin-top:7px">
+			                                <div class="col-sm-7 col-xs-8">
+			                                    <span class="input-icon width-100">
+			                                        <input type="text" class="form-control" placeholder="组名"
+			                                               id="txtName"/>
+			                                        <i class="ace-icon fa fa-group"> </i>
+			                                   </span>
+			
+										<input type="hidden" id="groupids" name = "groupids"/>
+										<input type="hidden" id="userid" name = "userid"/>
+			                                </div>
+			
+			                                <div class="col-sm-4 col-xs-4 align-right">
+			                                    <button type="button" class="btn btn-info btn-default-ths" id="btnSearch">
+			                                        <i class="ace-icon fa fa-search"></i>
+			                                        搜索
+			                                    </button>
+			
+			                                </div>
+			                            </div>
+			                            <hr class="no-margin">
+			
+			                            <table id="simple-table" class="table  table-bordered table-hover">
+			                                <thead>
+			                                <tr>
+			                                    <th class="center">
+			                                        <label class="pos-rel">
+			                                            <input type="checkbox" class="ace"/>
+			                                            <span class="lbl"></span>
+			                                        </label>
+			                                    </th>
+			                                    <th class=""><i class="ace-icon fa fa-group"></i>
+			                                        组名
+													<i class="ace-icon fa fa-sort blue pull-right" data-sort-field="A.GROUP_NAME"></i>
+			                                    </th>
+			                                    <th>
+			                                        <i class="ace-icon fa fa-sitemap"></i>
+			                                        部门
+			                                        <i class="ace-icon fa fa-sort blue pull-right" data-sort-field="B.DEPT_NAME"></i>
+			                                    </th>
+			
+			                                </tr>
+			                                </thead>
+			
+			                                <tbody>
+											<script id="tpTable" type="text/template">
+											{@each pageInfo.list as it,index}
+			                                <tr>
+			                                    <td class="center">
+			                                        <label class="pos-rel">
+			                                            <input onclick="checkClickReps(this)" type="checkbox" class="ace" id="%{it.GROUP_CODE}"
+															   data-ths-ou="%{it.GROUP_NAME}&%{it.DEPT_ID}&%{it.DEPT_NAME}"/>
+			                                            <span class="lbl"></span>
+			                                        </label>
+			                                    </td>
+			                                    <td class="text-info">
+			                                       %{it.GROUP_NAME}
+			                                    </td>
+			                                    <td>%{it.DEPT_NAME}</td>
+			                                </tr>
+											{@/each}
+											</script>
+			                                </tbody>
+			                    </table>
+								<div class="form-group center" style="margin-top: 20px" id="divLoading">
+									<i class="ace-icon fa fa-spinner fa-spin orange bigger-200"></i>
+								</div>
+
+			                    <div class="form-group" id="divPager">
+									<script id="tpPager" type="text/template">
+			                       <div class="hidden-xs pull-left" style="margin-left: 12px" >
+			                            <div class="space-4"></div>
+			                            总记录数:%{pageInfo.total}条，每页%{pageInfo.pageSize}条，共%{pageInfo.pages}页。
+			                        </div>
+									<div class="hidden-lg hidden-md hidden-sm pull-left" style="margin-left: 12px" >
+			                            <div class="space-4"></div>
+			                            共%{pageInfo.total}条&nbsp;&nbsp;%{pageInfo.pages}页
+			                        </div>
+			                        <ul class="pagination pull-right" >
+			                            <li class="%{pageInfo.hasPreviousPage|pagerDisable}">
+			                                <a href="javascript:gotoPage(%{pageInfo.hasPreviousPage},1);">
+			                                    <i class="ace-icon fa fa-angle-double-left"></i>
+			                                </a>
+			                            </li>
+			                            <li class="%{pageInfo.hasPreviousPage|pagerDisable}">
+			                                <a href="javascript:gotoPage(%{pageInfo.hasPreviousPage},pageNum-1);">
+			                                    <i class="ace-icon fa fa-angle-left"></i>
+			                                </a>
+			                            </li>
+										{@each pageInfo.navigatepageNums as it,index}
+										<li class="%{it|pagerCurrent}">
+											<a href="javascript:gotoPage(true,%{it});">%{it}</a>
+										</li>
+										{@/each}
+			                            <li class="%{pageInfo.hasNextPage|pagerDisable}">
+			                                <a href="javascript:gotoPage(%{pageInfo.hasNextPage},pageNum +1);">
+			                                    <i class="ace-icon fa fa-angle-right"></i>
+			                                </a>
+			                            </li>
+			                            <li class="%{pageInfo.hasNextPage|pagerDisable}">
+			                                <a href="javascript:gotoPage(%{pageInfo.hasNextPage},%{pageInfo.pages});">
+			                                    <i class="ace-icon fa fa-angle-double-right"></i>
+			                                </a>
+			                            </li>
+			                        </ul>
+									</script>
+			                    </div>
+                                </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+        </div><!--/.main-content-inner-->
+    </div><!-- /.main-content -->
+</div><!-- /.main-container -->
+
+<!-- basic scripts -->
+
+<!--[if !IE]> -->
+<script src="../../assets/components/jquery/dist/jquery.js"></script>
+<!-- <![endif]-->
+
+<!--[if IE]>
+<script src="../../assets/components/jquery.1x/dist/jquery.js"></script>
+<![endif]-->
+<script type="text/javascript">
+    if ('ontouchstart' in document.documentElement) document.write("<script src='../../assets/components/jquery.mobile.custom/jquery.mobile.custom.js'>" + "<" + "/script>");
+</script>
+<script src="../../assets/components/bootstrap/dist/js/bootstrap.js"></script>
+
+<!-- page specific plugin scripts -->
+<!--zTree-->
+<script src="../../assets/components/zTree/js/jquery.ztree.all.min.js"></script>
+
+<!--ace script-->
+<script src="../../assets/js/ace.js"></script>
+
+<script src="../../assets/js/ths-util.js"></script>
+
+<!-- config script 请项目组注意修改里面的配置-->
+<script src="config.js"></script>
+<script src="deptTree.js"></script>
+
+
+<script type="text/javascript">
+		juicer.set({
+		    'tag::interpolateOpen': '%{',
+		    'tag::noneencodeOpen': '%%{'
+		});
+	    var selGroups = [
+	         /*{id:"groupid",name:"用户组1",deptid:"deptidxx"}*/
+	    ];
+	
+	    selGroups.remove = function(id){
+	        for(var i = selGroups.length -1 ;i>= 0 ;i--)
+	        {
+	            if(id == selGroups[i].id)
+	            {
+	            	selGroups.splice(i,1);
+	                removeSelectFromUL(id);
+	            }
+	        }
+	    }
+	    selGroups.add = function (id,name,deptid) {
+	        var group = {};
+	        group.id = id;
+	        group.name = name;
+	        group.deptid = deptid;
+	        //alert(id+","+name+","+deptid)
+	        //group.deptname = deptName;
+	        selGroups[selGroups.length]=group;
+	        addSelectToUL(id,name);
+	    }
+	    selGroups.clear = function(){
+	    	selGroups.length = 0;
+	    }
+	    selGroups.render= function () {
+	        $.each(selGroups,function () {
+	            addSelectToUL(this.id,this.name);
+	        })
+	    }
+	    function addSelectToUL(id,name)
+	    {
+	        $("#selectList").append("<li class='search-choice' id='li-" + id + "'><span>" + name + "</span>"
+	                +"<a class='search-choice-close' onclick='selGroups.remove(\"" + id + "\")'></a></li>");
+	    }
+	    function removeSelectFromUL(id) {
+	    	if(id.indexOf(".") > -1){
+	        	$("#selectList").find("[id='li-" + id + "']").remove();
+	        	if($("#" + id)){
+					 $("[id='" + id + "']").eq(0).prop('checked', false);
+				}
+	        }else{
+	        	$("#selectList").find("#li-" + id).remove();
+	        	if($("#" + id)){
+					 $("#" + id).eq(0).prop('checked', false);
+				}
+	        }
+	    }
+
+	    
+		//table checkbox点击处理
+        function checkClickReps(ck)
+        {
+            var groupid = ck.id;
+            if(!groupid || groupid == "" || !$(ck).data("ths-ou")|| !selGroups)
+                 return;
+            if(ck.checked && selGroups)
+            {
+                var userdata = $(ck).data("ths-ou").split("&");
+                selGroups.add(groupid,userdata[0],userdata[1]);
+            }
+            else
+            {
+            	selGroups.remove(groupid);
+            }
+        }
+
+		var url = config.ou_server_url + "/ouapi/ou/dept/tree.json";
+		var orgid  = ths.getUrlParam("orgid");
+		//当前登录人所属组织ID，默认为根组织ID,
+		if(orgid == null || orgid == "" ) orgid =config.root_ou_id;
+		var deptid = orgid;//当前选中的部门ID
+		var sort = "a.sort asc";//排序
+		var pageNum = 1;//当前页数
+		//自定义回调方法-OK操作
+		var callbackFun = ths.getUrlParam("callback");
+		//自定义回调方法-关闭操作
+		var closeCallbackFun = ths.getUrlParam("closeCallback");
+		//存储所选值的隐藏域ID和text域ID
+		var hiddenId=ths.getUrlParam("hiddenId");
+		var textId=ths.getUrlParam("textId");
+		if(hiddenId && textId){
+			var _selectHidden=$("#"+hiddenId, window.parent.document);
+			var hiddenArry=_selectHidden.val().trim().split(",");
+			var _selectText=$("#"+textId, window.parent.document);
+			var textArray=_selectText.val().trim().split(",");
+			if(hiddenArry.length>0 && textArray.length>0){
+				$(hiddenArry).each(function(index,content){
+					console.log(hiddenArry)
+					if(this!=""){
+						
+						var group={};
+						group.id=this;
+						group.name=textArray[index];
+						selGroups[index]=group;
+					}
+				})
+			}
+		}
+		var compiled_tpl_table = juicer($("#tpTable").html());
+		var compiled_tpl_pager = juicer($("#tpPager").html());
+		
+		function treeClick() {
+			deptid = arguments[0];
+			loadTableData();
+		}
+		function gotoPage(redirct,num) {
+			if(!redirct || num == pageNum) return;
+			loadTableData(num);
+		}
+		function loadTableData()
+		{
+			if(arguments.length == 0)
+				pageNum = 1;
+			else
+				pageNum = arguments[0];
+			$('#simple-table > thead > tr > th input[type=checkbox]').eq(0).prop('checked', false);
+			$("#divLoading").show();
+			$("#simple-table").find("tbody").html("");
+			$("#divPager").html("");
+			var txtKeys = $("#txtName").val().trim();
+			$.ajax( {
+				url: config.ou_server_url + "/ouapi/ou/usergroup/listajax.json",
+				data:{"DEPT_ID":deptid,"GROUP_NAME":encodeURIComponent(txtKeys),"sort":sort,"pageNum":pageNum,"pageSize":7,"ORG_ID":orgid,"showchild":$("#cbShowChildOrg")[0].checked},
+				type:'get',
+				cache:false,
+				dataType:'jsonp',
+				success:function(data){
+					$("#divLoading").hide();
+					var html = compiled_tpl_table.render(data);
+					$("#simple-table").find("tbody").html(html);
+					html = compiled_tpl_pager.render(data);
+					$("#divPager").html(html);
+					
+					//勾选之前选中的项
+					$.each(selGroups,function () {
+						if($("#" + this.id)){
+							if(this.id.indexOf(".") > -1){
+								$("[id='" + this.id + "']").eq(0).prop('checked', true);
+							}else{
+								$("#" + this.id).eq(0).prop('checked', true);
+							}
+						}
+					});
+				},
+				error : function(msg) {
+					//console.log(msg);
+				}
+			});
+		}
+
+		var pagerDisable = function (data) {
+			return data?"":"disabled";
+		}
+		var pagerCurrent = function(num){
+			return num==pageNum?"active":"";
+		}
+		//为模板引擎注册函数
+		juicer.register("pagerDisable",pagerDisable);
+		juicer.register("pagerCurrent",pagerCurrent);
+
+		//判断父页面是否存在方法
+		function parentExistsFun(funName){
+			if(funName == null || funName == ""){
+				return false;
+			}
+			var existsFun = false;
+			try{
+	    		eval("window.parent." + funName);
+	    		existsFun = true;
+	    	}catch(err) {}
+	    	return existsFun;
+		}
+
+		jQuery(function ($) {
+
+			//Tree 代码 BENGIN
+			var tree = new deptTree($("#treeDept"), config.ou_server_url + "/ouapi/ou/dept/tree.json");
+			tree.setShowChildOrg($("#cbShowChildOrg")[0].checked).setNodeClickFuncName("treeClick").loadData(orgid);
+			
+		    $("#cbShowChildOrg").on(ace.click_event,function(){
+				tree.setShowChildOrg($("#cbShowChildOrg")[0].checked).render();
+				loadTableData();
+		    });
+			//Tree 代码 END
+
+			loadTableData();
+
+		    $("#btnOK").on(ace.click_event,function () {
+		    	if(parentExistsFun(callbackFun) == true){ //存在自定义回调方法，进行调用
+		    		eval("window.parent." + callbackFun + "(" + JSON.stringify(selGroups) + ")");
+		    	}else if(window.parent.groupSelectMutiCallBack)
+	            {
+	            	window.parent.groupSelectMutiCallBack(selGroups);
+	            }
+				if(parentExistsFun(closeCallbackFun) == true){ //存在自定义回调方法，进行调用
+			    	eval("window.parent." + closeCallbackFun + "()");
+			    }else if(window.parent.closeDialog){
+	            	window.parent.closeDialog();
+	    		}
+				console.log(selGroups);		    	
+	        });
+	        $("#btnCancel").on(ace.click_event,function () {
+	        	if(parentExistsFun(closeCallbackFun) == true){ //存在自定义回调方法，进行调用
+			    	eval("window.parent." + closeCallbackFun + "()");
+			    }else if(window.parent.closeDialog){
+	            	window.parent.closeDialog();
+	    		}
+	        });
+			$("#btnSearch").on(ace.click_event,function () {
+				loadTableData();
+			});
+
+			$("#simple-table>thead>tr>th").on(ace.click_event, function (e) {
+				if(!($("#divLoading").is(":hidden")))
+						return;
+
+				var direct = "";
+				var $i = $(this).find("[data-sort-field]");
+				if ($i.hasClass("fa-sort")|| $i.hasClass("fa-sort-desc")) {
+					direct="asc";
+				}
+				else if ($i.hasClass("fa-sort-asc")) {
+					direct="desc";
+				}
+				if(direct != ""){
+					sort=$i.data("sort-field") + " " + direct;
+					loadTableData();
+					$("#simple-table>thead>tr>th").find("[data-sort-field]").removeClass("fa-sort")
+							.removeClass("fa-sort-asc").removeClass("fa-sort-desc").addClass("fa-sort");
+					$i.removeClass("fa-sort").addClass("fa-sort-" + direct) ;
+				}
+			})
+	        //select/deselect all rows according to table header checkbox
+	        $('#simple-table > thead > tr > th input[type=checkbox]').eq(0).on(ace.click_event, function(){
+	            var th_checked = this.checked;//checkbox inside "TH" table header
+	            $(this).closest('table').find('tbody > tr').each(function(){
+	                var row = this;
+	                $(row).find('input[type=checkbox]').each(function () {
+	                    if(this.checked != th_checked)
+	                    {
+	                        $(this).eq(0).prop('checked', th_checked);
+	                        checkClickReps(this);
+	                    }
+	                });
+	            });
+	        });
+			
+			 //回显之前选中的项
+	        if(window.parent&&window.parent.selectGroups)
+	        {
+	        	selGroups.length = 0;
+	            $.each(window.parent.selectGroups,function (i) {
+	            	selGroups[i] = this;
+	            });
+	        }
+
+	        selGroups.render();
+
+	    });
+
+</script>
+</body>
+</html>

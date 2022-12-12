@@ -1,0 +1,36 @@
+.ui-state-highlight{
+	border:1px solid #BFEFFF!important;
+}
+
+.fc-content-skeleton .fc-today{
+	background:#BFEFFF!important;
+}
+
+.fc-bg .fc-today{
+	background:#BFEFFF!important;
+}
+
+
+/* 修改查看全部悬浮框的宽度 */
+.fc-more-popover {
+  /*   width: 362px; */
+}
+/*修改事件的样式*/
+.fc-event{
+	border-radius:0px!important;
+	margin-left:-1px;
+	padding-left:5px;
+}
+/*修改周标题的样式*/
+.fc-day-header{
+	background-color:#38abf5!important;
+	line-height:30px;
+	height:30px;
+}
+.fc-today .fc-day-number{
+	background:#BFEFFF!important;
+}
+.fc-day-number{
+	/* border:1px solid #d1d1d1!important;
+	border-bottom:none!important; */
+}

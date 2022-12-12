@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="ths.project.dyh.dataquery.mapper.AirMonitorMapper">
+
+    <select id="getAirMonitorDatas" parameterType="java.util.Map" resultType="java.util.Map">
+        SELECT
+        ROW_NUMBER() OVER(ORDER BY T1.EVERY_TIME) ROWNU,
+        LEFT(T1.EVERY_TIME,16) AS MONDATE,
+        CASE WHEN T2.AQI IS NULL THEN '-' WHEN T2.AQI=0 THEN '-' ELSE T2.AQI END AS AQI,
+        CASE WHEN T2.PM25 IS NULL THEN '-' ELSE T2.PM25 END AS PM25,
+        CASE WHEN T2.PM10 IS NULL THEN '-' ELSE T2.PM10 END AS PM10,
+        CASE WHEN T2.O3 IS NULL THEN '-' ELSE T2.O3 END AS O3,
+        CASE WHEN T2.SO2 IS NULL THEN '-' ELSE T2.SO2 END AS SO2,
+        CASE WHEN T2.NO2 IS NULL THEN '-' ELSE T2.NO2 END AS NO2,
+        CASE WHEN T2.CO IS NULL THEN '-' ELSE T2.CO END AS CO,
+        T1.REGIONNAME AS SNAME
+        FROM (
+        SELECT CONVERT(VARCHAR (100), DATEADD(hour, NUMBER, CAST(#{beginDate}+':00:00' AS DATETIME)),20) AS
+        EVERY_TIME,M.REGIONNAME
+        FROM MASTER..SPT_VALUES N,(
+        SELECT SNAME AS REGIONNAME FROM TENVAIR.T_CONFIG_TYPE_REGION_INFO WHERE TYPECODE
+        IN('6','7','8','9','99')
+        ) M
+        WHERE N.TYPE = 'P'
+        AND DATEADD(hour, NUMBER, CAST(#{beginDate}+':00:00' AS DATETIME)) &lt;= CAST(#{endDate}+':00:00' AS
+        DATETIME)
+        )T1
+        LEFT JOIN(
+        SELECT
+        POINTNAME AS SNAME,
+        CONVERT(VARCHAR(20),AQI) AS AQI,
+        CONVERT(VARCHAR(20),PM2_5) AS PM25,
+        CONVERT(VARCHAR(20),PM10 ) AS PM10,
+        CONVERT(VARCHAR(20),SO2 ) AS SO2,
+        CONVERT(VARCHAR(20),NO2 ) AS NO2,
+        CONVERT(VARCHAR(20),CONVERT(DECIMAL(3,1),CO)) AS CO,
+        CONVERT(VARCHAR(20),O3 ) AS O3,
+        CONVERT(VARCHAR(20),MONITORTIME,20) as MONDATE
+        FROM
+        TENVAIR.T_ENV_AIRDATA_POINT_HOUR
+        WHERE MONITORTIME BETWEEN #{beginDate}+':00:00' AND #{endDate}+':00:00'
+        )T2 ON T1.EVERY_TIME = T2.MONDATE AND T1.REGIONNAME = T2.SNAME
+        WHERE T1.REGIONNAME IN
+        <foreach collection="SNAMES" open="(" close=")" separator="," item="SNAMES">
+            #{SNAMES}
+        </foreach>
+        ORDER BY T1.EVERY_TIME,T1.REGIONNAME
+    </select>
+    <select id="getAirMonitorDatas1" parameterType="java.util.Map" resultType="java.util.Map">
+        SELECT
+        ROW_NUMBER() OVER(ORDER BY T.MONDATE) ROWNU,
+        MONDATE,
+        <foreach collection="SNAMES" separator="," item="SNAMES">
+            MAX(CASE WHEN T.SNAME=#{SNAMES} THEN ${PULL} END) AS "${SNAMES}"
+        </foreach>
+        FROM(
+        SELECT
+        LEFT(T1.EVERY_TIME,16) AS MONDATE,
+        T2.AQI ,
+        T2.PM25,
+        T2.PM10,
+        T2.O3 ,
+        T2.SO2,
+        T2.NO2,
+        T2.CO,
+        T1.REGIONNAME AS SNAME
+        FROM (
+        SELECT CONVERT(VARCHAR (100), DATEADD(hour, NUMBER, CAST(#{beginDate}+':00:00' AS DATETIME)),20) AS
+        EVERY_TIME,M.REGIONNAME
+        FROM MASTER..SPT_VALUES N,(
+        SELECT SNAME AS REGIONNAME FROM TENVAIR.T_CONFIG_TYPE_REGION_INFO WHERE TYPECODE
+        IN('6','7','8','9','99')
+        ) M
+        WHERE N.TYPE = 'P'
+        AND DATEADD(hour, NUMBER, CAST(#{beginDate}+':00:00' AS DATETIME)) &lt;= CAST(#{endDate}+':00:00' AS
+        DATETIME)
+        )T1
+        LEFT JOIN(
+        SELECT
+        POINTNAME AS SNAME,
+        CONVERT(VARCHAR(20),AQI) AS AQI,
+        CONVERT(VARCHAR(20),PM2_5) AS PM25,
+        CONVERT(VARCHAR(20),PM10 ) AS PM10,
+        CONVERT(VARCHAR(20),SO2 ) AS SO2,
+        CONVERT(VARCHAR(20),NO2 ) AS NO2,
+        CONVERT(VARCHAR(20),CONVERT(DECIMAL(3,1),CO)) AS CO,
+        CONVERT(VARCHAR(20),O3 ) AS O3,
+        CONVERT(VARCHAR(20),MONITORTIME,20) as MONDATE
+        FROM
+        TENVAIR.T_ENV_AIRDATA_POINT_HOUR
+        WHERE MONITORTIME BETWEEN #{beginDate}+':00:00' AND #{endDate}+':00:00'
+        )T2 ON T1.EVERY_TIME = T2.MONDATE AND T1.REGIONNAME = T2.SNAME
+        WHERE T1.REGIONNAME IN
+        <foreach collection="SNAMES" open="(" close=")" separator="," item="SNAMES">
+            #{SNAMES}
+        </foreach>) T GROUP BY MONDATE ORDER BY MONDATE
+    </select>
+    <!-- 行政区监测数据-小时数据 -->
+    <select id="getechartsDatas" parameterType="java.util.Map" resultType="java.util.Map">
+        SELECT
+        CASE WHEN SNAME ='郫县' then '郫都区' when SNAME ='都江堰' then '都江堰市' else SNAME end AS SNAME
+        CONVERT(VARCHAR(20),AQI ) AS AQI,
+        CONVERT(VARCHAR(20),PM25 ) AS PM25,
+        CONVERT(VARCHAR(20),PM10 ) AS PM10,
+        CONVERT(VARCHAR(20),O3 ) AS O3,
+        CONVERT(VARCHAR(20),SO2 ) AS SO2,
+        CONVERT(VARCHAR(20),NO2 ) AS NO2,
+        CONVERT(DECIMAL(3,1),CO ) AS CO,
+
+        convert(VARCHAR(5),MONDATE,108) as MONDATEse>
+        FROM
+        CDJ.V_AIRMONITOR_DATAS
+        WHERE
+        DATATYPE =#{DATATYPE} AND
+        TIMETYPE =#{TIMETYPE} AND
+
+        MONDATE BETWEEN #{beginDate}+':00:00' AND #{endDate}+':00:00'
+
+        AND SNAME IN <foreach collection="SNAMES" open="(" close=")" separator="," item="SNAMES">#{SNAMES}</foreach>ORDER
+        BY T.EVERY_TIME,SNAME
+    </select>
+
+    <select id="getStationName" parameterType="java.util.Map" resultType="java.util.Map">
+        SELECT SNAME AS NAME
+        FROM(
+        SELECT *
+        FROM TENVAIR.T_ENV_AUTOMONI_AIRSTATIONINFO
+        <if test="REGION != null and REGION !='' and REGION !='全部'">
+            WHERE REGIONNAME IN
+            <foreach collection="REGIONS" open="(" close=")" separator="," item="REGIONNAME">#{REGIONNAME}</foreach>
+        </if>
+        )T1
+        INNER JOIN (
+        SELECT *
+        FROM TENVAIR.T_CONFIG_TYPE_REGION_INFO
+        <choose>
+            <when test="STATIONTYPE != null and STATIONTYPE !='' and STATIONTYPE !='全部'">
+                WHERE TYPECODE IN
+                <foreach collection="STATIONTYPES" open="(" close=")" separator="," item="TYPE">#{TYPE}</foreach>
+            </when>
+            <otherwise>
+                WHERE TYPECODE IN ('6','7','8')
+            </otherwise>
+        </choose>
+        ) T2 ON T1.POINTCODE = T2.SCODE
+    </select>
+    <!--获取区县-->
+    <select id="getRegionName" parameterType="java.util.Map" resultType="java.util.Map">
+        SELECT CASE WHEN REGIONCODE = '510100000000' THEN '全部' ELSE REGIONNAME END AS NAME
+        FROM TENVAIR.T_REGION_INFO
+        WHERE PARENTCODE = #{parentCode}
+        ORDER BY REGIONCODE
+    </select>
+    <!--获取附近站点-->
+    <select id="getNearStationList" parameterType="java.util.Map" resultType="java.util.Map">
+        SELECT TOP 2 T.DIR_POINT_CODE CODE,
+               C.SNAME AS NAME,
+               T.DISTANCE
+        FROM (
+                 SELECT A.SOURCE_POINT_CODE AS SCODE,
+                        B.SNAME             AS SNAEM,
+                        A.DIR_POINT_CODE,
+                        A.DIR_TYPE,
+                        A.DISTANCE
+                 FROM DBO.T_POINT_DIS_CONFIG A
+                          INNER JOIN TENVAIR.T_CONFIG_TYPE_REGION_INFO B ON A.SOURCE_POINT_CODE = B.SCODE
+                     AND A.SOURCE_TYPE = B.TYPECODE
+                 WHERE 1 = 1
+                   AND SNAME = #{sName}
+             ) T
+                 INNER JOIN TENVAIR.T_CONFIG_TYPE_REGION_INFO C ON CAST(T.DIR_POINT_CODE AS VARCHAR) = C.SCODE
+            AND T.DIR_TYPE = C.TYPECODE
+        ORDER BY T.DISTANCE ASC
+    </select>
+
+    <select id="getMaxTime" parameterType="java.util.Map" resultType="java.util.Map">
+        SELECT CONVERT(VARCHAR(20),MAX(MONITORTIME),20) MAXTIME
+        FROM
+        TENVAIR.T_ENV_AIRDATA_POINT_HOUR
+        WHERE POINTNAME IN
+        <foreach collection="SNAMES" open="(" close=")" separator="," item="SNAMES">#{SNAMES}</foreach>
+
+    </select>
+
+    <select id="getAirMonitorDatas2" parameterType="java.util.Map" resultType="java.util.Map">
+        SELECT
+        ROW_NUMBER() OVER(ORDER BY T.MONDATE) ROWNU,
+        MONDATE,
+        <foreach collection="SNAMES" separator="," item="SNAMES">
+            MAX(CASE WHEN T.SNAME=#{SNAMES} THEN ${PULL} END) AS "${SNAMES}"
+        </foreach>
+        FROM(
+        SELECT
+        LEFT(T1.EVERY_TIME,16) AS MONDATE,
+        T2.AQI ,
+        T2.PM25,
+        T2.PM10,
+        T2.O3 ,
+        T2.SO2,
+        T2.NO2,
+        T2.CO,
+        T1.REGIONNAME AS SNAME
+        FROM (
+        SELECT CONVERT(VARCHAR (100), DATEADD(hour, NUMBER, CAST(#{beginDate}+':00:00' AS DATETIME)),20) AS
+        EVERY_TIME,M.REGIONNAME
+        FROM MASTER..SPT_VALUES N,(
+        SELECT SNAME AS REGIONNAME FROM TENVAIR.T_CONFIG_TYPE_REGION_INFO WHERE TYPECODE
+        IN('6','7','8','9','99')
+        ) M
+        WHERE N.TYPE = 'P'
+        AND DATEADD(hour, NUMBER, CAST(#{beginDate}+':00:00' AS DATETIME)) &lt;= CAST(#{endDate}+':00:00' AS
+        DATETIME)
+        )T1
+        LEFT JOIN(
+        SELECT
+        POINTNAME AS SNAME,
+        CONVERT(VARCHAR(20),AQI) AS AQI,
+        CONVERT(VARCHAR(20),PM2_5) AS PM25,
+        CONVERT(VARCHAR(20),PM10 ) AS PM10,
+        CONVERT(VARCHAR(20),SO2 ) AS SO2,
+        CONVERT(VARCHAR(20),NO2 ) AS NO2,
+        CONVERT(VARCHAR(20),CONVERT(DECIMAL(3,1),CO)) AS CO,
+        CONVERT(VARCHAR(20),O3 ) AS O3,
+        CONVERT(VARCHAR(20),MONITORTIME,20) as MONDATE
+        FROM
+        TENVAIR.T_ENV_AIRDATA_POINT_HOUR
+        WHERE MONITORTIME BETWEEN #{beginDate}+':00:00' AND #{endDate}+':00:00'
+        )T2 ON T1.EVERY_TIME = T2.MONDATE AND T1.REGIONNAME = T2.SNAME
+        WHERE T1.REGIONNAME IN
+        <foreach collection="SNAMES" open="(" close=")" separator="," item="SNAMES">
+            #{SNAMES}
+        </foreach>) T GROUP BY MONDATE ORDER BY MONDATE
+    </select>
+</mapper>

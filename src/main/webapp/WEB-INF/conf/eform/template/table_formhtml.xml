@@ -1,0 +1,16 @@
+#set($Integer = 0)##
+<table class="formTable" id="table_$FORM.FORM_ID" cols="$FORM.TABLE_COL_NUM">
+	#foreach($FORMROW in $FORMROWS )
+	<tr id="tr_$FORMROW.FORMROW_ID" class="#if("$!FORMROW.IS_BASE_ROW" == "true")title_tr#elseif("$!FORMROW.IS_BASE_ROW" != "true")data_tr#end" #if("$!FORMROW.IS_BASE_ROW" == "true" and "$!IS_DESIGN" != "true")style="height: 0px;"#end>
+		#foreach($FORMTD in $FORMROW.FORMTDS )
+		#if("$!FORMTD.IS_BE_MERGED" != "1")
+		<#if("$!FORMROW.IS_BASE_ROW" != "true")td#elseif("$!FORMROW.IS_BASE_ROW" == "true")th#end id="td_$FORMTD.FORMTD_ID" cell_index="$!{velocityCount}" #if("$!FORMTD.FORMTD_COLSPAN" != "" && "$!FORMTD.FORMTD_COLSPAN" != "1")colspan="$FORMTD.FORMTD_COLSPAN"#end #if("$!FORMTD.FORMTD_ROWSPAN" != "" && "$!FORMTD.FORMTD_ROWSPAN" != "1")rowspan="$FORMTD.FORMTD_ROWSPAN"#end #if("$!FORMTD.FORMTD_STYLE" != "")style="$FORMTD.FORMTD_STYLE"#end>
+			#foreach($FORMCELL in $FORMTD.FORMCELLS )
+			$!FORMCELL.HTML
+			#end
+		</#if("$!FORMROW.IS_BASE_ROW" != "true")td#elseif("$!FORMROW.IS_BASE_ROW" == "true")th#end>
+		#end
+		#end
+	</tr>
+	#end
+</table>

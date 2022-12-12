@@ -1,0 +1,1 @@
+package ths.project.service.common.vo.drowDown;import io.swagger.annotations.ApiModel;import io.swagger.annotations.ApiModelProperty;import lombok.Data;/** * @author:Toledo * @date:2021/3/22 10:57 * @descripthion: **/@ApiModel(value = "下拉菜单基础vo")@Datapublic class DropDownBaseVo {    @ApiModelProperty("下拉参数值")   private String dropValue;}

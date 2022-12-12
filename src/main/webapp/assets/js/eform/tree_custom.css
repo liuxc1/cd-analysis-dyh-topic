@@ -1,0 +1,43 @@
+.ztree li span.button.table_ico_open,.ztree li span.button.table_ico_close,.ztree li span.button.table_ico_docu{
+	display: inline-block;
+	font: normal normal normal 14px/1 FontAwesome;
+	padding: 2px;
+	background-image: none !important;
+}
+
+.ztree li span.button.table_ico_open:before,.ztree li span.button.table_ico_close:before,.ztree li span.button.table_ico_docu:before{
+	content: "\f0ce";
+}
+
+.ztree li span.button.field_ico_open,.ztree li span.button.field_ico_close,.ztree li span.button.field_ico_docu{
+	display: inline-block;
+	font: normal normal normal 14px/1 FontAwesome;
+	padding: 3px;
+	background-image: none !important;
+}
+
+.ztree li span.button.field_ico_open:before,.ztree li span.button.field_ico_close:before,.ztree li span.button.field_ico_docu:before{
+	content: "\f0db";
+}
+
+.ztree li span.button.dictree_ico_open,.ztree li span.button.dictree_ico_close,.ztree li span.button.dictree_ico_docu{
+	display: inline-block;
+	font: normal normal normal 14px/1 FontAwesome;
+	padding: 2px;
+	background-image: none !important;
+}
+
+.ztree li span.button.dictree_ico_open:before,.ztree li span.button.dictree_ico_close:before,.ztree li span.button.dictree_ico_docu:before{
+	content: "\f0e8";
+}
+
+.ztree li span.button.dic_ico_open,.ztree li span.button.dic_ico_close,.ztree li span.button.dic_ico_docu{
+	display: inline-block;
+	font: normal normal normal 14px/1 FontAwesome;
+	padding: 3px;
+	background-image: none !important;
+}
+
+.ztree li span.button.dic_ico_open:before,.ztree li span.button.dic_ico_close:before,.ztree li span.button.dic_ico_docu:before{
+	content: "\f0ca";
+}

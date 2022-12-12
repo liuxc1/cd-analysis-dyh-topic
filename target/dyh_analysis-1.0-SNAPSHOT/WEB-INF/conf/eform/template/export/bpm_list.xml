@@ -1,0 +1,398 @@
+<%@ page contentType="text/html;charset=UTF-8" language="java"%>
+<%@ include file="/WEB-INF/jsp/_common/taglib.jsp"%>
+<!DOCTYPE html>
+<html lang="zh">
+	<head>
+		<title>数据表列表</title>
+		<%@ include file="/WEB-INF/jsp/_common/commonCSS.jsp"%>
+		<!--页面自定义的CSS，请放在这里 -->
+		<style type="text/css">
+			/*td不换行，多余内容省略号显示*/
+			table{
+				table-layout: fixed;
+			}
+			td{
+				white-space: nowrap;
+			    overflow: hidden;
+			    text-overflow: ellipsis;
+			    -o-text-overflow: ellipsis;
+			    -moz-text-overflow: ellipsis;
+			    -webkit-text-overflow: ellipsis;
+			}
+		</style>
+	</head>
+#set($modelClassNameLowerCase = ${formTemplateService.underline2Camel("${exportInfo.modelClassName}", true)})
+#set($primaryKeyParam = ${formTemplateService.underline2Camel("${exportInfo.primaryKey}", true)})
+#set($elParam = '$')
+	<body class="no-skin">
+		<div class="main-container" id="main-container">
+			<div class="main-content">
+				<div class="main-content-inner fixed-page-header fixed-40">
+		            <div id="breadcrumbs" class="breadcrumbs">
+		                <ul class="breadcrumb">
+		                    <li class="active">
+		                        <h5 class="page-title">
+		                            <i class="fa fa-file-text-o"></i>
+									列表页面
+		                        </h5>
+		                    </li>
+		                </ul><!-- /.breadcrumb -->
+		            </div>
+		        </div>
+				<div class="main-content-inner padding-page-content">
+					<div class="page-content">
+						<div class="space-4"></div>
+						<div class="row">
+							<div class="col-xs-12">
+								<form class="form-horizontal" id="formList" action="${ctx}/${exportInfo.jspDirectory}/bpmlist.vm" method="post">
+									<!-- 动态参数隐藏域 -->
+									<input type="hidden" id="_eformVariable" value=""/>
+									<div class="form-group">
+										<label class="col-sm-1 control-label no-padding-right">办理状态</label>
+										<div class="col-sm-3">
+											<select class="form-control" name="form['HANDLE_STATE']" >
+												<option value="TODO" <c:if test="${elParam}{form.HANDLE_STATE == 'TODO'}">selected="selected"</c:if>>待办</option>
+												<option value="DONE" <c:if test="${elParam}{form.HANDLE_STATE == 'DONE'}">selected="selected"</c:if>>已办</option>
+	                                   	    </select>
+										</div>
+#foreach($formList in $exportInfo.queryFormList )##
+#if(${formList.formcellTypecode} != 'INPUTHIDDEN')##
+										<label class="col-sm-1 control-label no-padding-right" style="margin-top:10px">
+#if("$!{formList.formcellDescr}" != "")
+											${formList.formcellDescr}
+#else
+											${formList.fieldName}
+#end
+										</label>
+										<div class="col-sm-3" style="margin-top:10px">
+#if("$!{formList.formcellTypecode}" == "" || ${formList.formcellTypecode} == 'INPUTNUMBER' || ${formList.formcellTypecode} == 'TEXTAREA' || ${formList.formcellTypecode} == 'INPUT')##
+											<input type="text" class="form-control" name="form['${formList.fieldCode}']" 
+													value="${elParam}{form.${formList.fieldCode}}" >
+#elseif(${formList.formcellTypecode} == 'DATE')##
+											<div class="input-group">
+												<input type="text" class="form-control" name="form['${formList.fieldCode}']" 
+														value="${elParam}{form.${formList.fieldCode}}" readonly="readonly">
+												<span class="input-group-btn">
+										  			<button type="button" class="btn btn-white btn-default" 
+															 onclick="WdatePicker({el: '${formList.fieldCode}', dateFmt: '${formList.fieldDatetype}'});">
+											      	 	<i class="ace-icon fa fa-calendar"></i>
+										       		</button>
+												</span>
+											</div>
+#elseif(${formList.formcellTypecode} == 'SELECT' || ${formList.formcellTypecode} == 'RADIO' || ${formList.formcellTypecode} == 'CHECKBOX')##
+											<select name="form['${formList.fieldCode}']" class="form-control">
+												<option value="">--请选择--</option>
+												<c:forEach var="dictionaryObj" items='${elParam}{dictionaryMap["${formList.formcellDictionary}"]}'>
+													<option value="${elParam}{dictionaryObj.dictionary_code}" <c:if test='${elParam}{dictionaryObj.dictionary_code == form.${formList.fieldCode}}'>selected</c:if>>
+														${elParam}{dictionaryObj.dictionary_name}
+													</option>
+												</c:forEach>
+											</select>
+#elseif(${formList.formcellTypecode} == 'OPENRADIO')##
+											<div class="input-group">
+											   	<input type="hidden" name="form['${formList.fieldCode}']" oldvalue="${elParam}{form.${formList.fieldCode}}" value="${elParam}{form.${formList.fieldCode}}">
+											   	<input type="text" class="form-control" name="form['${formList.fieldCode}_THSNAME']" readonly="readonly" 
+											   			value="${elParam}{form.${formList.fieldCode}_THSNAME}" onclick="jdp_eform_openList(this,'1','${formList.fieldName}','${formList.fieldDictionary}','','')">
+											    <span class="input-group-btn">
+											    	<button type="button" class="btn btn-white btn-default" onclick="jdp_eform_clearValue(this)">
+											        	<i class="ace-icon fa fa-remove"></i>
+											    	</button>
+												</span>
+											</div>
+#elseif(${formList.formcellTypecode} == 'OPENCHECKBOX')##
+											<div class="input-group">
+											   	<input type="hidden" name="form['${formList.fieldCode}']" oldvalue="${elParam}{form.${formList.fieldCode}}" value="${elParam}{form.${formList.fieldCode}}">
+											   	<input type="text" class="form-control" name="form['${formList.fieldCode}_THSNAME']" readonly="readonly" 
+											   			value="${elParam}{form.${formList.fieldCode}_THSNAME}" onclick="jdp_eform_openList(this,'2','${formList.fieldName}','${formList.fieldDictionary}','','')">
+											    <span class="input-group-btn">
+											    	<button type="button" class="btn btn-white btn-default" onclick="jdp_eform_clearValue(this)">
+											        	<i class="ace-icon fa fa-remove"></i>
+											    	</button>
+												</span>
+											</div>
+#elseif(${formList.formcellTypecode} == 'RADIOTREE')##
+											<div class="input-group">
+											   	<input type="hidden" name="form['${formList.fieldCode}']" oldvalue="${elParam}{form.${formList.fieldCode}}" value="${elParam}{form.${formList.fieldCode}}">
+											   	<input type="text" class="form-control" name="form['${formList.fieldCode}_THSNAME']" readonly="readonly"
+											   			value="${elParam}{form.${formList.fieldCode}_THSNAME}" onclick="jdp_eform_openTree(this,'1','${formList.fieldName}','','','','','ceshisqlzidian','')">
+											   	<span class="input-group-btn">
+											    	<button type="button" class="btn btn-white btn-default" onclick="jdp_eform_clearValue(this)">
+											        	<i class="ace-icon fa fa-remove"></i>
+											    	</button>
+												</span>
+											</div>
+#elseif(${formList.formcellTypecode} == 'CHECKBOXTREE')##
+											<div class="input-group">
+											   	<input type="hidden" name="form['${formList.fieldCode}']" oldvalue="${elParam}{form.${formList.fieldCode}}" value="${elParam}{form.${formList.fieldCode}}">
+											   	<input type="text" class="form-control" name="form['${formList.fieldCode}_THSNAME']" readonly="readonly" 
+											   			value="${elParam}{form.${formList.fieldCode}_THSNAME}" onclick="jdp_eform_openTree(this,'2','${formList.fieldName}','','','','','ceshisqlzidian','')">
+											    <span class="input-group-btn">
+											    	<button type="button" class="btn btn-white btn-default" onclick="jdp_eform_clearValue(this)">
+											        	<i class="ace-icon fa fa-remove"></i>
+											    	</button>
+												</span>
+											</div>
+#elseif(${formList.formcellTypecode} == 'AREATREE')##
+											<div class="input-group">
+											   	<input type="hidden" name="form['${formList.fieldCode}']" oldvalue="${elParam}{form.${formList.fieldCode}}" value="${elParam}{form.${formList.fieldCode}}">
+											   	<input type="text" class="form-control" name="form['${formList.fieldCode}_THSNAME']" readonly="readonly"
+											   			value="${elParam}{form.${formList.fieldCode}_THSNAME}" onclick="jdp_eform_openTree(this,'1','${formList.fieldName}','ths.jdp.eform.mapper.TreeMapper','jdp_region_tree','','')">
+											    <span class="input-group-btn">
+											    	<button type="button" class="btn btn-white btn-default" onclick="jdp_eform_clearValue(this)">
+												       	<i class="ace-icon fa fa-remove"></i>
+											    	</button>
+												</span>
+											</div>
+#elseif(${formList.formcellTypecode} == 'TRADETREE')##
+											<div class="input-group">
+											   	<input type="hidden" name="form['${formList.fieldCode}']" oldvalue="${elParam}{form.${formList.fieldCode}}" value="${elParam}{form.${formList.fieldCode}}">
+											   	<input type="text" class="form-control" name="form['${formList.fieldCode}_THSNAME']" readonly="readonly" 
+											   			value="${elParam}{form.${formList.fieldCode}_THSNAME}" onclick="jdp_eform_openTree(this,'1','${formList.fieldName}','ths.jdp.eform.mapper.TreeMapper','jdp_trade_tree','','')">
+											    <span class="input-group-btn">
+											    	<button type="button" class="btn btn-white btn-default" onclick="jdp_eform_clearValue(this)">
+											        	<i class="ace-icon fa fa-remove"></i>
+											    	</button>
+												</span>
+											</div>
+#elseif(${formList.formcellTypecode} == 'RADIOUSER')##
+											<div class="input-group">
+											   	<input type="hidden" name="form['${formList.fieldCode}']" oldvalue="${elParam}{form.${formList.fieldCode}}" value="${elParam}{form.${formList.fieldCode}}">
+											   	<input type="text" class="form-control" name="form['${formList.fieldCode}_THSNAME']" readonly="readonly"
+											   			value="${elParam}{form.${formList.fieldCode}_THSNAME}" onclick="jdp_eform_openUser(this,'1','${formList.fieldName}','','')">
+											    <span class="input-group-btn">
+											    	<button type="button" class="btn btn-white btn-default" onclick="jdp_eform_clearValue(this)">
+											        	<i class="ace-icon fa fa-remove"></i>
+											    	</button>
+												</span>
+											</div>
+#elseif(${formList.formcellTypecode} == 'CHECKBOXUSER')##
+											<div class="input-group">
+											   	<input type="hidden" name="form['${formList.fieldCode}']" oldvalue="${elParam}{form.${formList.fieldCode}}" value="${elParam}{form.${formList.fieldCode}}">
+											   	<input type="text" class="form-control" name="form['${formList.fieldCode}_THSNAME']" readonly="readonly"
+											   			value="${elParam}{form.${formList.fieldCode}_THSNAME}" onclick="jdp_eform_openUser(this,'2','${formList.fieldName}','','')">
+											    <span class="input-group-btn">
+												   	<button type="button" class="btn btn-white btn-default" onclick="jdp_eform_clearValue(this)">
+											        	<i class="ace-icon fa fa-remove"></i>
+											    	</button>
+												</span>
+											</div>
+#elseif(${formList.formcellTypecode} == 'RADIODEPT')##
+											<div class="input-group">
+											   	<input type="hidden" name="form['${formList.fieldCode}']" oldvalue="${elParam}{form.${formList.fieldCode}}" value="${elParam}{form.${formList.fieldCode}}">
+											   	<input type="text" class="form-control" name="form['${formList.fieldCode}_THSNAME']" readonly="readonly"
+														value="${elParam}{form.${formList.fieldCode}_THSNAME}" onclick="jdp_eform_openDept(this,'1','${formList.fieldName}','','')">
+											    <span class="input-group-btn">
+											    	<button type="button" class="btn btn-white btn-default" onclick="jdp_eform_clearValue(this)">
+											        	<i class="ace-icon fa fa-remove"></i>
+											    	</button>
+												</span>
+											</div>
+#elseif(${formList.formcellTypecode} == 'CHECKBOXDEPT')##
+											<div class="input-group">
+											   	<input type="hidden" name="form['${formList.fieldCode}']" oldvalue="${elParam}{form.${formList.fieldCode}}" value="${elParam}{form.${formList.fieldCode}}">
+											   	<input type="text" class="form-control" name="form['${formList.fieldCode}_THSNAME']" readonly="readonly"
+														value="${elParam}{form.${formList.fieldCode}_THSNAME}"  onclick="jdp_eform_openDept(this,'2','${formList.fieldName}','','')">
+											    <span class="input-group-btn">
+											    	<button type="button" class="btn btn-white btn-default" onclick="jdp_eform_clearValue(this)">
+											        	<i class="ace-icon fa fa-remove"></i>
+											    	</button>
+												</span>
+											</div>
+#elseif(${formList.formcellTypecode} == 'CHECKBOXROLE')##
+											<div class="input-group">
+											   	<input type="hidden" name="form['${formList.fieldCode}']" oldvalue="${elParam}{form.${formList.fieldCode}}" value="${elParam}{form.${formList.fieldCode}}">
+											   	<input type="text" class="form-control" name="form['${formList.fieldCode}_THSNAME']" readonly="readonly"
+														value="${elParam}{form.${formList.fieldCode}_THSNAME}" onclick="jdp_eform_openRole(this,'2','${formList.fieldName}','','')">
+											    <span class="input-group-btn">
+												   	<button type="button" class="btn btn-white btn-default" onclick="jdp_eform_clearValue(this)">
+											    	   	<i class="ace-icon fa fa-remove"></i>
+											    	</button>
+												</span>
+											</div>
+#elseif(${formList.formcellTypecode} == 'CHECKBOXPOSI')##
+											<div class="input-group">
+											   	<input type="hidden" name="form['${formList.fieldCode}']" oldvalue="${elParam}{form.${formList.fieldCode}}" value="${elParam}{form.${formList.fieldCode}}">
+											  	<input type="text" class="form-control" name="form['${formList.fieldCode}_THSNAME']" readonly="readonly"
+											  			value="${elParam}{form.${formList.fieldCode}_THSNAME}" onclick="jdp_eform_openPosi(this,'2','${formList.fieldName}','','')">
+											    <span class="input-group-btn">
+											    	<button type="button" class="btn btn-white btn-default" onclick="jdp_eform_clearValue(this)">
+											        	<i class="ace-icon fa fa-remove"></i>
+												   	</button>
+												</span>
+											</div>
+#elseif(${formList.formcellTypecode} == 'CHECKBOXGROUP')##
+											<div class="input-group">
+											   	<input type="hidden" name="form['${formList.fieldCode}']"  oldvalue="${elParam}{form.${formList.fieldCode}}" value="${elParam}{form.${formList.fieldCode}}">
+											   	<input type="text" class="form-control" name="form['${_THSNAME}']" readonly="readonly"
+											   			value="${elParam}{form.${formList.fieldCode}_THSNAME}" onclick="jdp_eform_openGroup(this,'2','${formList.fieldName}','','')">
+											    <span class="input-group-btn">
+											    	<button type="button" class="btn btn-white btn-default" onclick="jdp_eform_clearValue(this)">
+											        	<i class="ace-icon fa fa-remove"></i>
+											    	</button>
+												</span>
+											</div>
+#end##
+										</div>
+#end##
+#end##
+									</div>
+									<div class="form-group">
+										<div class="col-sm-12  align-right">
+											<button type="button" class="btn btn-info btn-default-ths pull-right" data-self-js="doSearch(true)">
+												<i class="ace-icon fa fa-search"></i>
+												搜索
+											</button>
+										</div>
+									</div>
+									<hr class="no-margin">
+									<div class="page-toolbar align-right list-toolbar">
+										<c:if test="${elParam}{form.HANDLE_STATE == null || form.HANDLE_STATE=='TODO'}">
+											<button type="button" class="btn btn-xs btn-primary btn-xs-ths" data-self-js="doEdit();">
+												<i class="ace-icon fa fa-plus"></i> 起草流程
+											</button>
+										</c:if>
+									</div>
+									<table id="listTable" class="table table-bordered table-hover">
+										<thead>
+											<tr>
+#foreach($formList in $exportInfo.formList)##
+#if(${formList.fieldLevel} != 0)##
+#if(${formList.fieldUserOrderBy} == 1)
+												<th data-sort-col="${formList.fieldCode}"#if(${formList.fieldLevel} == 1) class="hidden-sm hidden-xs"#end#if("$!{formList.fieldWidth}" != "") style="width: ${formList.fieldWidth};"#end>
+#else
+												<th class="center#if(${formList.fieldLevel} == 1) hidden-sm hidden-xs#end" data-sort-col="${formList.fieldCode}"#if("$!{formList.fieldWidth}" != "") style="width: ${formList.fieldWidth};"#end>
+#end
+#if("$!{formList.fieldImage}" != "")##
+													<i class="ace-icon fa ${formList.fieldImage}"></i>
+#end##
+#if("$!{formList.formcellDescr}" != "")
+													${formList.formcellDescr}
+#else
+													${formList.fieldName}
+#end
+#if(${formList.fieldUserOrderBy} == 1)##
+													<i class="ace-icon fa fa-sort pull-right"></i>
+#end##
+												</th>
+#end##
+#end##
+												<th class="center" style="width: 120px;">
+													<i class="ace-icon fa fa-wrench"></i>
+													操作
+												</th>
+											</tr>
+										</thead>
+										<tbody>
+											<c:forEach var="item" items="${elParam}{pageInfo.list}">
+												<tr>
+#foreach($formList in $exportInfo.formList)##
+#set($fieldParam = ${formTemplateService.underline2Camel("${formList.fieldCode}", true)})
+#if(${formList.fieldLevel} != 0)##
+													<td#if(${formList.fieldLevel} == 1) class="hidden-sm hidden-xs"#end#if(${formList.fieldWidth}) style="width: ${formList.fieldWidth};"#end>
+#if(${formList.formcellTypecode} == "DATE")##
+														<fmt:formatDate value="${elParam}{item.${fieldParam}}" pattern="${formList.formcellDatetype}"/>
+#elseif(${formList.fieldTransDic} == 1 && "$!{formList.shownameMetaField}" == "" && "$!{formList.formcellDictionary}" != "")##
+														<ths:dictionary treeCode="${formList.formcellDictionary}" value="${elParam}{item.${fieldParam}}" paramMap="${elParam}{form}"/>
+#elseif(${formList.fieldTransDic} == 1 && "$!{formList.shownameMetaField}" == "" && ${formList.formcellTypecode} == "AREATREE")##
+														<ths:region value="${elParam}{item.${fieldParam}}" paramMap="${elParam}{form}"/>
+#elseif(${formList.fieldTransDic} == 1 && "$!{formList.shownameMetaField}" == "" && ${formList.formcellTypecode} == "TRADETREE")##
+														<ths:trade value="${elParam}{item.${fieldParam}}" paramMap="${elParam}{form}"/>
+#elseif(${formList.fieldTransDic} == 1 && "$!{formList.shownameMetaField}" == "" && (${formList.formcellTypecode} == "RADIOUSER" || ${formList.formcellTypecode} == "CHECKBOXUSER"))##
+														<ths:user value="${elParam}{item.${fieldParam}}"/>
+#elseif(${formList.fieldTransDic} == 1 && "$!{formList.shownameMetaField}" == "" && (${formList.formcellTypecode} == "RADIODEPT" || ${formList.formcellTypecode} == "CHECKBOXDEPT"))##
+														<ths:dept value="${elParam}{item.${fieldParam}}"/>
+#elseif(${formList.fieldTransDic} == 1 && "$!{formList.shownameMetaField}" == "" && (${formList.formcellTypecode} == "RADIOROLE" || ${formList.formcellTypecode} == "CHECKBOXROLE"))##
+														<ths:role value="${elParam}{item.${fieldParam}}"/>
+#elseif(${formList.fieldTransDic} == 1 && "$!{formList.shownameMetaField}" == "" && (${formList.formcellTypecode} == "RADIOPOSI" || ${formList.formcellTypecode} == "CHECKBOXPOSI"))##
+														<ths:posi value="${elParam}{item.${fieldParam}}"/>
+#elseif(${formList.fieldTransDic} == 1 && "$!{formList.shownameMetaField}" == "" && (${formList.formcellTypecode} == "RADIOGROUP" || ${formList.formcellTypecode} == "CHECKBOXGROUP"))##
+														<ths:group value="${elParam}{item.${fieldParam}}"/>
+#else##
+														${elParam}{item.${fieldParam}}##
+
+#end##
+													</td>
+#end##
+#end##
+													<td class="center col-op-ths">
+														<c:if test="${elParam}{form.HANDLE_STATE == null || form.HANDLE_STATE == 'TODO'}">
+															<button type="button" class="btn btn-sm btn-default btn-white btn-op-ths" title="办理" 
+																	data-self-js="doEdit('${elParam}{item.${primaryKeyParam}}','${elParam}{item.taskId}')">
+																<i class="ace-icon fa fa-edit"></i>
+															</button>
+														</c:if>
+														<c:if test="${elParam}{form.HANDLE_STATE == 'DONE'}">
+															<button type="button" class="btn btn-sm btn-default btn-white btn-op-ths" title="查看" 
+																	data-self-js="doView('${elParam}{item.${primaryKeyParam}}','${elParam}{item.taskId}')">
+																<i class="ace-icon fa fa-eye"></i>
+															</button>
+														</c:if>
+													</td>
+												</tr>
+											</c:forEach>
+										</tbody>
+									</table>
+									<%@ include file="/WEB-INF/jsp/_common/paging.jsp"%>
+								</form>
+							</div>
+						</div>
+					</div>
+				</div>
+				<!--/.main-content-inner-->
+			</div>
+			<!-- /.main-content -->
+		</div>
+		<!-- /.main-container -->
+	
+		<iframe id="iframeInfo" name="iframeInfo" class="frmContent" src=""
+			style="border: none; display: none" width="100%"></iframe>
+	
+		<%@ include file="/WEB-INF/jsp/_common/commonJS.jsp"%>
+		<script type="text/javascript" src="${ctx}/assets/js/eform/eform_custom2.js"></script>
+	
+		<!-- 自己写的JS，请放在这里 -->
+		<script type="text/javascript">
+			//设置iframe自动高
+			autoHeightIframe("iframeInfo");
+			
+			//搜索
+			function doSearch(){
+				if(typeof(arguments[0]) != "undefined" && arguments[0] == true)
+					$("#pageNum").val(1);
+				$("#orderBy").closest("form").submit();
+			}
+			
+   			//跳转到编辑
+   			function doEdit(id, taskId){
+   				if(!taskId){
+   					taskId = "";
+   				}
+		        var _url = ctx + "/${exportInfo.jspDirectory}/bpmedit.vm?id=" + (id == null ? "" : id) + "&processDefKey=${processDefKey}&taskId=" + taskId + "&" + $("#_eformVariable").val();
+   				$("#main-container").hide();
+		        $("#iframeInfo").attr("src", _url).show();
+   			}
+   			
+   			//查看
+   			function doView(id, taskId){
+   				var _url = ctx + "/${exportInfo.jspDirectory}/bpmdetail.vm?id=" + id + "&taskId=" + taskId + "&" + $("#_eformVariable").val();
+   				$("#main-container").hide();
+		        $("#iframeInfo").attr("src", _url).show();
+   			}
+   	
+			jQuery(function($){
+				//初始化表格的事件，如表头排序，列操作等
+				__doInitTableEvent("listTable");
+				
+				//设置动态参数隐藏域的值
+				var _eformVariable = "";
+				<c:forEach var="item" items="${elParam}{form}">
+					if(_eformVariable != ""){
+						_eformVariable += "&";
+					}
+					_eformVariable += "${elParam}{item.key}=${elParam}{item.value}";
+				</c:forEach>
+				$("#_eformVariable").val(_eformVariable);
+			});
+		</script>
+	</body>
+</html>

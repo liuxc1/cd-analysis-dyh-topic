@@ -1,0 +1,64 @@
+package ${exportInfo.servicePackage};
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
+
+import ths.jdp.core.dao.base.IDao;
+import ths.jdp.core.datasource.annotation.ChangeDatasource;
+
+import ${exportInfo.modelPackage}.${exportInfo.modelClassName};
+
+/**
+ * $!{exportInfo.tableName} Service类
+ * @author eform4.0
+ * @since ${CREATE_DATE}
+ */
+@Service
+public class ${exportInfo.serviceClassName}{
+	
+#set($methodForeignKeyName = ${formTemplateService.underline2Camel("${exportInfo.foreignKey}", false)})
+#set($foreignKeyParam = ${formTemplateService.underline2Camel("${exportInfo.foreignKey}", true)})
+	/**
+	 * 对应mapper.xml的namespace
+	 */
+	private final String sqlPackage = "${exportInfo.mapperPackage}.${exportInfo.mapperClassName}";
+	
+	@Autowired
+	@Qualifier("jdpDao")
+	protected IDao<${exportInfo.modelClassName}> dao;
+	
+	/**
+	 * 根据外键查询信息
+	 * @param ${foreignKeyParam} 外键
+	 * @return
+	 */
+	@ChangeDatasource("${exportInfo.metaTable.tableDatasource}")
+	public List<${exportInfo.modelClassName}> selectBy${methodForeignKeyName}(String ${foreignKeyParam}){
+		Map<String, Object> queryParam = new HashMap<String, Object>();
+		queryParam.put("${foreignKeyParam}", ${foreignKeyParam});
+		return dao.list(queryParam, sqlPackage + ".selectBy${methodForeignKeyName}");
+	}
+
+	/**
+	 * 插入信息
+	 * @param list 参数集合
+	 * @return
+	 */
+	public int batchInsert(List<${exportInfo.modelClassName}> list){
+		return dao.batchInsert(sqlPackage + ".insert", list);
+	}
+	
+	/**
+	 * 根据外键删除信息
+	 * @param ${foreignKeyParam} 外键
+	 * @return
+	 */
+	public int deleteBy${methodForeignKeyName}(String ${foreignKeyParam}){
+		return dao.delete(${foreignKeyParam}, sqlPackage + ".deleteBy${methodForeignKeyName}");
+	}
+}

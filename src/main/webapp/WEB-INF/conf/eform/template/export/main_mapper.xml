@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- $!{exportInfo.tableName} Mapper类 -->
+<mapper namespace="${exportInfo.mapperPackage}.${exportInfo.mapperClassName}">
+	
+	<!-- 查询列表信息 -->
+	<select id="list" parameterType="java.util.Map" resultType="${exportInfo.modelPackage}.${exportInfo.modelClassName}">
+		SELECT 
+#foreach($field in $exportInfo.metaFieldList)
+			${field.fieldCode}#if(${velocityCount} < $exportInfo.metaFieldList.size()),#end
+		
+#end
+		FROM ${exportInfo.metaTable.tableSchema}.${exportInfo.metaTable.tableCode}
+#if(${exportInfo.queryFormList.size()} > 0 || "$!{form.bpmProcKey}" != "")
+		<where>
+#foreach($formList in $exportInfo.queryFormList)
+#if("$!{formList.formcellTypecode}" == "" || ${formList.formcellTypecode} == 'INPUTNUMBER' || ${formList.formcellTypecode} == 'TEXTAREA' || ${formList.formcellTypecode} == 'INPUT')
+			<if test='${formList.fieldCode} != null and ${formList.fieldCode} != ""'>
+				<bind name="${formList.fieldCode}_LIKE" value="'%' + ${formList.fieldCode} + '%'"/>
+				#if(${velocityCount} > 1)AND #end${formList.fieldCode} LIKE #{${formList.fieldCode}_LIKE, jdbcType=${formTemplateService.getJdbcType("${formList.fieldDatatype}")}}
+			</if>
+#elseif("$!{formList.formcellTypecode}" == "OPENCHECKBOX" || "$!{formList.formcellTypecode}" == "CHECKBOXTREE" || "$!{formList.formcellTypecode}" == "CHECKBOXUSER" || "$!{formList.formcellTypecode}" == "CHECKBOXDEPT" || "$!{formList.formcellTypecode}" == "CHECKBOXROLE" || "$!{formList.formcellTypecode}" == "CHECKBOXPOSI" || "$!{formList.formcellTypecode}" == "CHECKBOXGROUP" )##
+			<if test="${formList.fieldCode}_LIST != null and ${formList.fieldCode}_LIST.size > 0">
+				AND ${formList.fieldCode} IN
+				<foreach item="item" collection="${formList.fieldCode}_LIST" open="(" close=")" separator=",">
+					#{item, jdbcType=${formTemplateService.getJdbcType("${formList.fieldDatatype}")}}
+				</foreach>
+			</if>
+#else
+			<if test='${formList.fieldCode} != null#if("$!{formList.fieldDatatype}" !="DATE") and ${formList.fieldCode} != ""#end'>
+				#if(${velocityCount} > 1)AND #end${formList.fieldCode} = #{${formList.fieldCode}, jdbcType=${formTemplateService.getJdbcType("${formList.fieldDatatype}")}}
+			</if>
+#end
+#end
+#if("$!{form.bpmProcKey}" != "")
+			<if test='INSTANCE_SQL != null and INSTANCE_SQL != ""'>
+			    ${INSTANCE_SQL}
+			</if>
+#end
+		</where>		
+#end
+	</select>
+	
+	<!-- 根据id查询信息 -->
+	<select id="selectById" parameterType="java.lang.String" resultType="${exportInfo.modelPackage}.${exportInfo.modelClassName}">
+		SELECT 
+#foreach($field in $exportInfo.metaFieldList)
+			${field.fieldCode}#if(${velocityCount} < $exportInfo.metaFieldList.size()),#end
+		
+#end
+		FROM ${exportInfo.metaTable.tableSchema}.${exportInfo.metaTable.tableCode}
+		WHERE ${exportInfo.primaryKey} = #{id, jdbcType=VARCHAR}
+	</select>
+	
+	<!-- 插入信息 -->
+	<insert id="insert" parameterType="${exportInfo.modelPackage}.${exportInfo.modelClassName}">
+		INSERT INTO ${exportInfo.metaTable.tableSchema}.${exportInfo.metaTable.tableCode}(
+#foreach($field in $exportInfo.metaFieldList)
+			${field.fieldCode}#if(${velocityCount} < $exportInfo.metaFieldList.size()),#end
+		
+#end
+		) VALUES(
+#foreach($field in $exportInfo.metaFieldList)
+			#{${formTemplateService.underline2Camel("${field.fieldCode}", true)}, jdbcType=${formTemplateService.getJdbcType("${field.fieldDatatype}")}}#if(${velocityCount} < $exportInfo.metaFieldList.size()),#end
+		
+#end		
+		)
+	</insert>
+	
+	<!-- 更新信息 -->
+	<update id="update" parameterType="${exportInfo.modelPackage}.${exportInfo.modelClassName}">
+		UPDATE ${exportInfo.metaTable.tableSchema}.${exportInfo.metaTable.tableCode} SET
+#foreach($field in $exportInfo.metaFieldList)
+#if(${field.fieldIsprimary} != "true")
+			${field.fieldCode} = #{${formTemplateService.underline2Camel("${field.fieldCode}", true)}, jdbcType=${formTemplateService.getJdbcType("${field.fieldDatatype}")}}#if(${velocityCount} < $exportInfo.metaFieldList.size()),#end
+
+#end		
+#end
+		WHERE 
+			${exportInfo.primaryKey} = #{${formTemplateService.underline2Camel("${exportInfo.primaryKey}", true)}, jdbcType=VARCHAR}
+	</update>
+	
+	<!-- 根据id数组删除信息 -->
+	<delete id="deleteByIds" parameterType="java.lang.String">
+		DELETE FROM ${exportInfo.metaTable.tableSchema}.${exportInfo.metaTable.tableCode}
+		WHERE ${exportInfo.primaryKey} IN
+		<foreach item="id" collection="array" open="(" close=")" separator=",">
+			#{id, jdbcType=VARCHAR}
+		</foreach>
+	</delete>
+</mapper>

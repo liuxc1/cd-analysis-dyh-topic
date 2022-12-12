@@ -1,0 +1,22 @@
+@charset "UTF-8";
+
+.ddc-table-text-one-line {
+    table-layout: fixed;
+    width: 100%;
+}
+
+.ddc-table-text-one-line tbody tr td,
+.ddc-table-text-one-line tbody tr th {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+}
+
+.ddc-content {
+    height: calc(100% - 36px);
+    border-left: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
+    border-right: 1px solid #ddd;
+    padding-top: 3px;
+}

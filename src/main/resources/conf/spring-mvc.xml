@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:cache="http://www.springframework.org/schema/cache"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns="http://www.springframework.org/schema/beans"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/mvc
+       http://www.springframework.org/schema/mvc/spring-mvc.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context.xsd
+       http://www.springframework.org/schema/cache
+       http://www.springframework.org/schema/cache/spring-cache.xsd
+       http://www.springframework.org/schema/aop
+       http://www.springframework.org/schema/aop/spring-aop-4.2.xsd" default-lazy-init="true">
+
+    <!-- 加载全局配置文件 -->
+    <context:property-placeholder location="classpath:conf/context.properties" file-encoding="UTF-8"/>
+
+    <!-- 自动扫描该包，使SpringMVC认为包下用了@controller注解的类是控制器 -->
+    <context:component-scan base-package="ths.**.web,ths.**.api,ths.jdp.report" use-default-filters="false">
+        <context:include-filter expression="org.springframework.stereotype.Controller" type="annotation"/>
+        <context:include-filter expression="org.springframework.web.bind.annotation.ControllerAdvice" type="annotation"/>
+    </context:component-scan>
+
+    <!-- spring MVC 缓存开启 -->
+    <cache:annotation-driven cache-manager="cacheManager" key-generator="customKeyGenerator"
+                             cache-resolver="jdpCacheResolver"/>
+
+    <mvc:interceptors>
+        <!-- 直接定义在mvc:interceptors根下面的Interceptor将拦截所有的请求
+            <bean class="ths.jdp.ou.interceptor.PermissionInterceptor"/>
+            定义在mvc:interceptor下面的表示是对特定的请求才进行拦截的 -->
+        <mvc:interceptor>
+            <mvc:mapping path="/**/*.vm"/>
+            <mvc:exclude-mapping path="/login.vm"/>
+            <mvc:exclude-mapping path="/loginpage.vm"/>
+            <mvc:exclude-mapping path="/loginout.vm"/>
+            <mvc:exclude-mapping path="/api/**/*.vm"/>
+            <mvc:exclude-mapping path="/app/**/*.vm"/>
+            <mvc:exclude-mapping path="/yqd/getData.vm"/>
+            <bean class="ths.jdp.project.intercepter.PermissionInterceptor"/>
+        </mvc:interceptor>
+    </mvc:interceptors>
+
+    <!--处理静态资源 -->
+    <!-- 	<mvc:default-servlet-handler />-->
+
+    <!-- 全局异常配置 -->
+    <bean id="exceptionResolver" class="ths.jdp.core.exception.resolver.ThsExceptionResolver">
+        <property name="order" value="0"/>
+        <property name="exceptionMappings">
+            <props>
+                <prop key="java.lang.Exception">_common/error_500</prop>
+            </props>
+        </property>
+        <property name="statusCodes">
+            <props>
+                <prop key="_common/error_500">500</prop>
+            </props>
+        </property>
+        <!-- 设置日志输出级别，不定义则默认不输出警告等错误日志信息 -->
+        <property name="warnLogCategory" value="WARN"/>
+        <!-- 默认错误页面，当找不到上面mappings中指定的异常对应视图时，使用本默认配置 -->
+        <property name="defaultErrorView" value="_common/error_500"/>
+        <!-- 默认HTTP状态码 -->
+        <property name="defaultStatusCode" value="500"/>
+    </bean>
+
+    <!--信息转换 - 开始 -->
+    <!--RequestMappingHandlerAdapter -->
+    <mvc:annotation-driven>
+        <mvc:message-converters>
+            <ref bean="stringHttpMessageConverter"/>
+            <ref bean="mappingJackson2HttpMessageConverter"/>
+        </mvc:message-converters>
+    </mvc:annotation-driven>
+
+    <bean id="stringHttpMessageConverter"
+          class="org.springframework.http.converter.StringHttpMessageConverter">
+        <constructor-arg value="UTF-8" index="0"/>
+        <!-- 避免出现乱码 -->
+        <property name="supportedMediaTypes">
+            <list>
+                <value>text/plain;charset=UTF-8</value>
+                <value>application/json;charset=UTF-8</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="mappingJackson2HttpMessageConverter"
+          class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
+        <property name="supportedMediaTypes">
+            <list>
+                <value>application/json</value>
+                <value>application/xml</value>
+                <value>text/html</value>
+                <value>text/plain</value>
+                <value>text/xml</value>
+            </list>
+        </property>
+        <property name="objectMapper">
+            <bean class="org.springframework.http.converter.json.Jackson2ObjectMapperFactoryBean">
+                <!-- 日期默认格式化 -->
+                <property name="dateFormat">
+                    <bean class="java.text.SimpleDateFormat">
+                        <constructor-arg type="java.lang.String" value="yyyy-MM-dd HH:mm:ss"/>
+                    </bean>
+                </property>
+                <!-- 时区指定 -->
+                <property name="timeZone" value="GMT+8"/>
+            </bean>
+        </property>
+    </bean>
+    <!--信息转换 - 结束 -->
+
+    <!--内容协商 -->
+    <bean class="org.springframework.web.servlet.view.ContentNegotiatingViewResolver">
+        <property name="contentNegotiationManager">
+            <bean class="org.springframework.web.accept.ContentNegotiationManagerFactoryBean">
+                <!-- 关闭扩展名至mimeType的映射,即不支持/user.json => application/json -->
+                <property name="favorPathExtension" value="false"/>
+                <!-- 用于开启 /userinfo/123?format=json 的支持 -->
+                <property name="favorParameter" value="true"/>
+                <property name="parameterName" value="format"/>
+                <!-- 忽略Accept Header -->
+                <property name="ignoreAcceptHeader" value="true"/>
+                <!--扩展名到MIME的映射；favorPathExtension或favorParameter是true时起作用 -->
+                <property name="mediaTypes">
+                    <map>
+                        <entry key="json" value="application/json"/>
+                        <entry key="xml" value="application/xml"/>
+                        <entry key="html" value="text/html"/>
+                    </map>
+                </property>
+                <!-- 默认的content type -->
+                <property name="defaultContentType" value="text/html"/>
+            </bean>
+        </property>
+        <property name="viewResolvers">
+            <list>
+                <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+                    <property name="viewClass" value="org.springframework.web.servlet.view.JstlView"/>
+                    <property name="prefix" value="/WEB-INF/jsp/"/>
+                    <property name="suffix" value=".jsp"/>
+                </bean>
+            </list>
+        </property>
+        <property name="defaultViews">
+            <list>
+                <bean class="org.springframework.web.servlet.view.json.MappingJackson2JsonView"/>
+            </list>
+        </property>
+    </bean>
+
+    <!--文件上传 -->
+    <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <property name="maxUploadSize" value="${uploader.maxUploadSize}"/>
+    </bean>
+
+    <!-- 初始化方法 -->
+    <!--    <bean class="ths.jdp.component.datasource.service.DatasourceManager" init-method="init"></bean>-->
+
+    <!--默认首页 -->
+    <!-- <mvc:view-controller path="/" view-name="redirect:./portal/ou/loginpage.vm"/> -->
+	
+	<aop:aspectj-autoproxy  proxy-target-class="true"/>
+</beans>

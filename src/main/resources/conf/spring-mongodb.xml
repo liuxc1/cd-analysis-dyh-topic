@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:mongo="http://www.springframework.org/schema/data/mongo"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans
+		http://www.springframework.org/schema/beans/spring-beans.xsd
+	    http://www.springframework.org/schema/data/mongo
+    	http://www.springframework.org/schema/data/mongo/spring-mongo.xsd">
+
+	 <!--连接MongoDB服务器-->
+    <mongo:mongo-client id="mongo" host="${spring.ths.nacos.mongo.host}" port="${spring.ths.nacos.mongo.port}" >
+        <mongo:client-options connections-per-host="8"
+                       threads-allowed-to-block-for-connection-multiplier="4"
+                       connect-timeout="150000"
+                       max-wait-time="150000"
+                       socket-keep-alive="true"
+                       socket-timeout="150000"/>
+    </mongo:mongo-client>
+
+    <mongo:db-factory id="mongoDbFactory"  dbname="${spring.ths.nacos.mongo.dbName}"  mongo-ref="mongo"/>
+
+
+    <!--配置mongoTemplate-->
+    <!-- mongodb的主要操作对象，所有对mongodb的增删改查的操作都是通过它完成-->
+    <bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate">
+        <constructor-arg name="mongoDbFactory" ref="mongoDbFactory"/>
+    </bean>
+
+</beans>

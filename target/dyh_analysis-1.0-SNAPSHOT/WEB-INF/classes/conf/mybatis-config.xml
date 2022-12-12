@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC
+        "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <settings>
+        <!-- 字段Map规则，下划线分割映射为驼峰结构 -->
+        <setting name="mapUnderscoreToCamelCase" value="true"/>
+        <!-- 如果字段为NULL，也执行Setter，对于Map结构尤其有用，否则Map不会存在此key -->
+        <setting name="callSettersOnNulls" value="true"/>
+        <!-- 部分数据库不识别默认的NULL类型（比如oracle），需要配置该属性 -->
+        <setting name="jdbcTypeForNull" value="NULL" />
+    </settings>
+    <typeHandlers>
+        <!-- postgresql数据库数字类型处理 -->
+        <typeHandler handler="ths.jdp.core.extend.mybatis.typehandler.PgsqlNumericTypeHandler"/>
+    </typeHandlers>
+</configuration>  

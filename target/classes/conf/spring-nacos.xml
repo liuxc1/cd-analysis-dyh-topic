@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:nacos="http://nacos.io/schema/nacos"
+       xmlns="http://www.springframework.org/schema/beans"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://nacos.io/schema/nacos http://nacos.io/schema/nacos.xsd">
+    <nacos:annotation-driven/>
+	<!-- server-addr:nacos服务端对应的ip和端口；context-path:nacos服务名，如果没有自定义，默认是nacos；namespace：命名空间，必须对应nacos服务端使用的命名空间 -->
+    <nacos:global-properties
+    		server-addr="http://192.168.0.205:8848"
+            context-path="nacos"
+            namespace="ths"/>
+    <!-- 服务实例信息配置 -->
+    <bean id="nacosInstanceProperties" class="com.alibaba.nacos.api.naming.pojo.Instance">
+		 <property name="serviceName" value=""/><!--服务名称，空自动获取应用上下文-->
+	     <property name="ip" value="" /> <!--服务IP地址，空自动获取第一块网卡;一般不需要修改-->
+	     <property name="port" value="0"/> <!--服务端口号，0自动获取应用启动端口号;一般不需要修改-->
+	     <property name="weight" value="1"/> <!--服务权重;一般不需要修改-->
+	     <property name="healthy" value="true"/> <!--开启健康检查;一般不需要修改-->
+	     <property name="clusterName" value=""/> <!--集群标识，空不指定集群;一般不需要修改-->
+	     <property name="metadata">
+	        <map>
+				<entry key="ths.instance.server.group.name" value="DEFAULT_GROUP" ></entry><!-- 服务实例所在的分组 -->
+	            <entry key="preserved.heart.beat.timeout" value="15000" ></entry><!--毫秒，心跳发送过期时间;一般不需要修改-->
+	            <entry key="preserved.heart.beat.interval" value="5000" ></entry><!--毫秒，心跳发送间隔;一般不需要修改-->
+	            <entry key="preserved.ip.delete.timeout" value="30000" ></entry><!--毫秒，超过指定时间服务被删除;一般不需要修改-->
+				<!--获取配置中心，文件配置-->
+				<entry key="ths.instance.config.group.name" value="DEFAULT_GROUP" ></entry><!-- 配置所在的分组 -->
+				<entry key="ths.instance.config.context.enabled" value="true" ></entry>  <!--是否读取配置中心的context文件-->
+	            <entry key="ths.instance.config.context" value="ths_demo_context.properties" ></entry>  <!--配置中心：context文件名称，每个应用不同，为空取serviceName+"_"+context-->
+	        </map>
+	    </property>
+	</bean>
+</beans>

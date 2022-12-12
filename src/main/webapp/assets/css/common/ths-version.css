@@ -1,0 +1,141 @@
+* {
+	margin: 0;
+	padding: 0;
+}
+
+#main {
+	width: 100%;
+	background-color: #f5f7fd;
+}
+
+#main .title {
+	width: 100%;
+	height: 157px;
+	text-align: center;
+	color: #323534;
+}
+
+#main .title h1 {
+	font-size: 40px;
+	padding-top: 40px;
+}
+
+#main .title p {
+	padding-top: 5px;
+	font-size: 15px;
+}
+
+#main .content-main {
+	width: 100%;
+	background-color: white;
+}
+/*滚动条*/
+.inner {
+	width: 200px;
+	height: 560px;
+	position: absolute;
+	top: 33px;
+	left: 13px;
+	overflow: hidden;
+	margin-top: 157px;
+	margin-left: 20px;
+}
+
+.innerbox {
+	overflow-x: hidden;
+	overflow-y: auto;
+	color: #9BA4BF;
+	font-size: 14px;
+	font-family: "\5FAE\8F6F\96C5\9ED1", Helvetica, "黑体", Arial, Tahoma;
+	height: 100%;
+}
+
+.innerbox .innerSpan {
+	width: 200px;
+	line-height: 30px;
+}
+
+.innerP {
+	margin-left: 10px;
+}
+
+.innerSpan {
+	width: 100px;
+	border-left: 1px solid #9BA4BF;
+}
+
+.innerSpan span {
+	padding-left: 10px;
+	position: relative;
+}
+
+.innerSpan span:before {
+	content: '';
+	position: absolute;
+	top: 50%;
+	bottom: 50%;
+	background: #a9334c;
+	width: 3px;
+	left: -1px;
+	-webkit-transition-property: 'top, bottom';
+	transition-property: 'top, bottom';
+	-webkit-transition-duration: 0.3s;
+	transition-duration: 0.3s;
+	-webkit-transition-timing-function: ease-out;
+	transition-timing-function: ease-out;
+}
+
+.innerSpan span:hover {
+	color: #000;
+}
+
+.innerSpan span:hover:before {
+	top: 0;
+	bottom: 0;
+}
+
+.innerSpan span a {
+	text-decoration: none;
+	color: #9BA4BF;
+}
+
+.innerSpan span a:hover {
+	color: #000;
+}
+
+.innerSpan span a.active {
+	color: #a9334c;
+}
+/*右边栏显示内容*/
+.contentMain-right {
+	width: 1082px;
+	height: 400px;
+	margin-left: 248px;
+}
+
+.contentMain-right .rightTitle {
+	line-height: 40px;
+	padding-top: 9px;
+}
+
+.rightTitle .rightTitleP {
+	font-size: 20px;
+	color: #C32C45;
+	border-bottom: 1px solid #E0DEDB;
+}
+
+.rightTitleTime {
+	font-size: 15px;
+	color: #323534;
+	float: right;
+}
+
+.rightContent {
+	margin-top: 10px;
+	line-height: 30px;
+	width: 92%;
+}
+
+.rightContent .rightContentSpan {
+	font-weight: 800;
+}

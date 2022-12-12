@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="ths.jdp.eform.mapper.CustomTreeMapper">    
+    <select id="custon_region_tree"  parameterType="java.util.Map"  resultType="java.util.Map" >
+		SELECT 
+			TREE_ID,
+			TREE_NAME,
+			TREE_PID,
+			CASE
+				WHEN TREE_PCOUNT>0 THEN 'true'
+				ELSE 'false' END ISPARENT,
+			PROVINCE_CODE,
+			CITY_CODE,
+			COUNTY_CODE,
+			TOWN_CODE,
+			UPDATE_TIME,
+			ALL_REGIN_NAME
+		FROM
+		(
+			SELECT 
+	  		  JCR.REGION_CODE AS TREE_ID,
+		      JCR.REGION_NAME AS TREE_NAME,
+		      JCR.PARENT_CODE AS TREE_PID,
+		      (SELECT COUNT(*) FROM JDP_COD_REGION WHERE PARENT_CODE = JCR.REGION_CODE) TREE_PCOUNT,
+		      JCR.PROVINCE_CODE,
+		      JCR.CITY_CODE,
+		      JCR.COUNTY_CODE,
+		      JCR.TOWN_CODE,
+		      JCR.UPDATE_TIME,
+		      JCR.ALL_REGIN_NAME
+		   FROM JDP_COD_REGION JCR WHERE 1=1 
+		   <if test="async == 'true'">
+			    <if test="TREE_PID == null or TREE_PID == ''">
+		            AND JCR.PARENT_CODE is null
+			    </if>
+			    <if test="TREE_PID != null and TREE_PID != ''">
+		            AND JCR.PARENT_CODE = #{TREE_PID,jdbcType=VARCHAR}
+			    </if>
+		   </if>
+			ORDER BY REGION_CODE ASC
+		) T
+		    	
+    </select>
+    
+    <select id="custom_control_table" parameterType="java.util.Map"  resultType="java.util.LinkedHashMap">
+    	SELECT 
+    	REGION_CODE AS CODE,
+    	REGION_NAME AS NAME,
+    	REGION_CODE AS "行政区编码",
+    	REGION_NAME AS "行政区名称"
+    	FROM JDP_COD_REGION 
+    	WHERE 1=1
+    	<if test="NAME!=null and NAME!=''">
+    		<bind name="nameLike" value="'%'+NAME+'%'"/>
+    		AND (
+    			REGION_CODE LIKE #{nameLike,jdbcType=VARCHAR}
+    			OR
+    			REGION_NAME LIKE #{nameLike,jdbcType=VARCHAR}
+    		)
+    	</if>
+    	ORDER BY REGION_CODE ASC 
+    </select>
+</mapper>

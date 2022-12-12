@@ -1,0 +1,215 @@
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ include file="/WEB-INF/jsp/_common/taglib.jsp"%>
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <title>知识库</title>
+	<%@ include file="/WEB-INF/jsp/_common/commonCSS.jsp"%>
+  	<!--页面自定义的CSS，请放在这里 -->
+    <style type="text/css">
+
+    </style>
+</head>
+
+<body class="no-skin">
+
+<div class="main-container" id="main-container">
+    <div class="main-content">
+        <div class="main-content-inner fixed-page-header fixed-40">
+            <div id="breadcrumbs" class="breadcrumbs">
+                <ul class="breadcrumb">
+                    <li class="active">
+                        <h5 class="page-title" >
+                            <i class="fa fa-file-text-o"></i>
+							知识库
+                        </h5>
+                    </li>
+                </ul><!-- /.breadcrumb -->
+
+            </div>
+        </div>
+        <div class="main-content-inner padding-page-content">
+            <div class="page-content">
+                <div class="space-4"></div>
+                <div class="row">
+                    <div class="col-xs-12">
+                        <form class="form-horizontal" role="form" id="formList" action="article_list.vm" method="post">
+
+                            <div class="form-group">
+                             	<label class="col-sm-1 control-label no-padding-right hidden-xs"
+                                       for="form-field-221">文章类型</label>
+                                <div class="col-sm-2 hidden-xs">
+                                    <select class="form-control"   name="form['ARTICLE_TYPEID']">
+	                                      	<option value="">-全部-</option>
+	                                        <c:forEach items="${articletypesList }" var="item">
+	                                        	<option <c:if test="${form.ARTICLE_TYPEID==item.dictionary_code}">selected="selected"</c:if> value="${item.dictionary_code }">${item.dictionary_name }</option>
+	                                        </c:forEach>
+                                    </select>
+                                </div>
+                                <label class="col-sm-1 control-label no-padding-right hidden-xs"
+                                       for="form-field-221">文章状态</label>
+                                <div class="col-sm-2 hidden-xs">
+                                    <select class="form-control"   name="form['ARTICLE_STATUSID']">
+	                                      	<option value="">-全部-</option>
+	                                        <c:forEach items="${articlestatusList }" var="item">
+	                                        	<option <c:if test="${form.ARTICLE_STATUSID==item.dictionary_code}">selected="selected"</c:if> value="${item.dictionary_code }">${item.dictionary_name }</option>
+	                                        </c:forEach>
+                                    </select>
+                                </div>
+                                <label class="col-sm-1 control-label no-padding-right" for="txtName">
+                                   	 标题/内容
+                                </label>
+                                <div class="col-sm-3">
+                                       <input type="text" class="form-control"  name="form['ARTICLE_CONTENT']"  value="${form.ARTICLE_CONTENT}" />
+                                </div>
+                                
+                                 <div class="col-sm-2  align-right">
+                                    <div class="space-4 hidden-lg hidden-md hidden-sm"></div>
+                                    <button type="button" class="btn btn-info pull-right"  data-self-js="doSearch(true)">
+                                        <i class="ace-icon fa fa-search"></i>
+                                       	 搜索
+                                    </button>
+                                </div>
+                            </div>
+                           
+                            <hr class="no-margin">
+                            <div class="page-toolbar align-right list-toolbar">
+                                <button type="button" class="btn btn-xs    btn-xs-ths"  data-self-href="article_edit.vm" id="btnAdd">
+                                    <i class="ace-icon fa fa-plus"></i>
+                                    添加
+                                </button>
+                                <button type="button" class="btn btn-xs btn-xs-ths" data-self-js="doDelete()" id="btnDelete">
+                                    <i class="ace-icon fa fa-trash-o"></i>
+                                    删除
+                                </button>
+                             </div>  
+                            <table id="listTable" class="table table-bordered table-hover">
+                                <thead>
+                                <tr>
+                                    <th class="center"  style="width: 50px">
+                                        <label class="pos-rel">
+                                            <input type="checkbox" class="ace" />
+                                            <span class="lbl"></span>
+                                        </label>
+                                    </th>
+                                    <th class="" data-sort-col="ARTICLE_TITLE"><i class="ace-icon fa fa-file-o"></i>
+                                        文章标题
+                                        <i class="ace-icon fa fa-sort pull-right"></i>
+                                    </th>
+                                    <th data-sort-col="ARTICLE_TYPE" style="width: 150px"><i class="ace-icon fa "></i>
+                                       文章分类
+                                        <i class="ace-icon fa fa-sort pull-right"></i>
+                                    </th>
+                                    <th class="hidden-xs " data-sort-col="ARTICLE_STATUS"  style="width: 100px">
+                                       文章状态
+                                        <i class="ace-icon fa fa-sort pull-right"></i>
+                                    </th>
+                                    <th class="align-center hidden-xs"  style="width: 100px"><i class="ace-icon fa fa-wrench"></i>
+                                        操作
+                                    </th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <c:forEach var="item" items="${pageInfo.list}">
+                                <tr>
+                                    <td class="center">
+                                        <label class="pos-rel">
+                                            <input type="checkbox" class="ace" value="${item.ARTICLE_ID}"/>
+                                            <span class="lbl"></span>
+                                        </label>
+                                    </td>
+                                    <td>
+                                        <a data-self-js="doRead('${item.ARTICLE_ID}')">${item.ARTICLE_TITLE}</a>
+                                    </td>
+                                    <td class="hidden-xs hidden-sm"> ${item.ARTICLE_TYPE}</td>
+                                    <td class="hidden-xs hidden-sm"> ${item.ARTICLE_STATUS}</td>
+                                    <td class="hidden-xs align-center col-op-ths">
+                                        <button type="button" class="btn btn-sm  btn-white btn-op-ths" title="编辑"
+                                                 data-self-href="article_edit.vm?id=${item.ARTICLE_ID}">
+                                            <i class="ace-icon fa fa-edit"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm  btn-white btn-op-ths"  title="查看"
+                                                data-self-js="doRead('${item.ARTICLE_ID}')">
+                                            <i class="ace-icon fa fa-eye"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+								</c:forEach>
+                                </tbody>
+                            </table>
+                              <%@ include file="/WEB-INF/jsp/_common/paging.jsp"%>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div><!--/.main-content-inner-->
+    </div><!-- /.main-content -->
+</div><!-- /.main-container -->
+
+<iframe id="iframeInfo" name="iframeInfo" class="frmContent"
+        src="" style="border: none; display: none" frameborder="0"
+        width="100%"></iframe>
+        
+<%@ include file="/WEB-INF/jsp/_common/commonJS.jsp"%>
+
+<!-- 自己写的JS，请放在这里 -->
+<script type="text/javascript">
+	//设置iframe自动高
+	autoHeightIframe("iframeInfo");
+	
+	//搜索
+	function doSearch(){
+		if( typeof(arguments[0]) != "undefined" && arguments[0] == true)
+			$("#pageNum").val(1);
+		$("#orderBy").closest("form").submit();
+	}
+	//批量删除
+	function doDelete(){
+		var _ids="";
+        $('#listTable > tbody > tr > td:first-child :checkbox:checked').each(function(){
+        	_ids = _ids + $(this).val() + ",";
+        });
+        _ids = _ids=""?_ids:_ids.substr(0,_ids.length -1 );
+        /**
+         * 执行数据批量删除
+         *  __ids 为英文逗号分隔的ID字符串,也可仅传递一个ID,执行单个删除
+         *  serverUrl 服务器端AJAX POST 地址
+         *  callBackFn 删除成功的回调函数,无参数,如function(){}
+         */
+		__doDelete(_ids,"article_delete.vm",function(){
+			//刷出之后，刷新列表
+			doSearch();
+		});
+	}
+	
+	//查看(增、改、查页面如果都是采用调用方法的方式打开，可以采用下面的方式展示)
+	function  doRead(id){
+		_url="article_read.vm?id="+id;
+        window.open(_url,id);
+	}
+	//关闭dialog
+	function closeDialog(id){
+		dialog.get(id).close().remove();
+	}
+	//删除一条数据，可参考此函数
+	function doDeleteOne(id){
+		__doDelete(id,"article_deleteOne.vm",function(){
+			//刷出之后，刷新列表
+			doSearch();
+		});
+	}
+	
+	jQuery(function($){
+		//初始化表格的事件，如表头排序，列操作等
+		__doInitTableEvent("listTable");
+		
+		  $("#btnDateStart").on(ace.click_event, function () { WdatePicker({el: "txtDateStart"});});
+		  $("#btnDateEnd").on(ace.click_event, function () { WdatePicker({el: "txtDateEnd"});});
+	});
+	function toMenu(){
+		window.top.location.href = "${ctx}/index.vm?tomenuid=0d895308-150e-4ad4-a26b-a6b94e00b0e8";
+		//window.top.location.href = "${ctx}/index.vm?tomenuid=8c46cf73-3e6f-4535-b7a1-1f994d2c9dc7";
+	}
+</script>
+</body>
+</html>

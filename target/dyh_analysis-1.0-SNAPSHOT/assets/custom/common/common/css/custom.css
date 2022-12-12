@@ -1,0 +1,112 @@
+@charset "UTF-8";
+
+html, body {
+    width: 100%;
+    height: 100%;
+}
+
+/**
+ * 自定义样式
+ */
+[v-cloak] {
+    display: none;
+}
+
+.full-auto {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    overflow: auto;
+}
+
+/**
+ * 小型无边框按钮样式
+ */
+.btn-noborder {
+    display: inline;
+    color: #1884FF;
+    background: none;
+    cursor: pointer;
+    font-size: 14px;
+    border: none;
+}
+
+.btn-noborder:hover {
+    background: #dee3e8;
+}
+
+.table-text-one-line {
+    table-layout: fixed;
+    width: 100%;
+}
+
+.table-text-one-line tbody tr td,
+.table-text-one-line tbody tr th {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+}
+
+
+.check-label {
+    position: relative;
+    display: inline-block;
+    color: #333;
+    margin: 0 10px 0 30px;
+}
+
+.check-label:hover {
+    color: #1890fe;
+}
+
+.check-label > input {
+    display: none;
+}
+
+.check-label > span {
+    display: inline-block;
+    padding-left: 2px;
+}
+
+.check-label > input + span:before {
+    content: "";
+    width: 18px;
+    height: 18px;
+    position: absolute;
+    bottom: 1px;
+    left: -20px;
+    border-radius: 50%;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.check-label > input[type="radio"] + span:before {
+    background: url(../images/icon_radio_default.png) no-repeat center;
+}
+
+.check-label:hover > input[type="radio"] + span:before {
+    background: url(../images/icon_radio_hover.png) no-repeat center;
+}
+
+.check-label > input[type="radio"]:checked + span:before {
+    background: url(../images/icon_radio_focus.png) no-repeat center;
+}
+
+.check-label > input[type="checkbox"] + span:before {
+    background: url(../images/icon_checkbox_default.png) no-repeat center;
+}
+
+.check-label:hover > input[type="checkbox"] + span:before {
+    background: url(../images/icon_checkbox_hover.png) no-repeat center;
+}
+
+.check-label > input[type="checkbox"]:checked + span:before {
+    background: url(../images/icon_checkbox_focus.png) no-repeat center;
+}
+
+.text-one-line {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}

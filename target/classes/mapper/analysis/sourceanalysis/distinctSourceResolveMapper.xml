@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="ths.air.web.analysis.sourceanalysis.distinctSourceResolveMapper">
+	<!--将数据导入时信息添加到T_COMM_FILE  -->
+	<insert id="insertFile" parameterType="java.util.Map">
+		INSERT INTO T_COMM_FILE (
+		FILE_ID,
+		ASCRIPTION_TYPE,
+		ASCRIPTION_ID,
+		FILE_FULL_NAME,
+		FILE_NAME,
+		FILE_ALIAS,
+		FILE_TYPE,
+		FILE_SIZE,
+		FILE_FORMAT_SIZE,
+		FILE_SAVE_PATH,
+		TRANSFORM,
+		TRANSFORM_TYPE,
+		FILE_SOURCE,
+		CREATE_USER,
+		CREATE_TIME 
+		)
+		VALUES
+			(
+		#{FILE_ID},#{ASCRIPTION_TYPE},#{ASCRIPTION_ID},
+		#{FILE_FULL_NAME},#{FILE_NAME},#{FILE_ALIAS},
+		#{FILE_TYPE},#{FILE_SIZE},#{FILE_FORMAT_SIZE},
+		#{FILE_SAVE_PATH},#{TRANSFORM},#{TRANSFORM_TYPE},#{FILE_SOURCE},
+		#{CREATE_USER},#{CREATE_TIME})
+	</insert>
+	
+	
+	
+
+	<insert id="addReportInfos" parameterType="java.util.Map">
+		INSERT INTO T_ANS_GENERAL_REPORT (
+		REPORT_ID,
+		ASCRIPTION_TYPE,
+		REPORT_BATCH,
+		REPORT_NAME,
+		REPORT_TIME,
+		REPORT_RATE,
+		REPORT_FREQUENCY,
+		REPORT_TYPE,
+		REPORT_TIP,
+		REMARK,
+		FIELD1,
+		FIELD2,
+		FIELD3,
+		FIELD4,
+		FIELD5,
+		FIELD6,
+		REPORT_INSCRIBE,
+		STATE,
+		CREATE_TIME,
+		CREATE_DEPT,
+		CREATE_USER,
+		EDIT_TIME,
+		EDIT_USER 
+		)
+		VALUES
+		(#{REPORT_ID},
+		#{ASCRIPTION_TYPE},
+		#{REPORT_BATCH},
+		#{REPORT_NAME},
+		#{REPORT_TIME},
+		#{REPORT_RATE},
+		#{REPORT_FREQUENCY},
+		#{REPORT_TYPE},
+		#{REPORT_TIP},
+		#{REMARK},
+		#{FIELD1},
+		#{FIELD2},
+		#{FIELD3},
+		#{FIELD4},
+		#{FIELD5},
+		#{FIELD6},
+		#{REPORT_INSCRIBE},
+		#{STATE},
+		#{CREATE_TIME},
+		#{CREATE_DEPT},
+		#{CREATE_USER},
+		#{EDIT_TIME},
+		#{EDIT_USER})
+	</insert>
+	
+	<update id="updateReportInfos" parameterType="java.util.Map">
+		UPDATE T_ANS_GENERAL_REPORT 
+		SET FIELD1 = #{FIELD1},
+			FIELD2 = #{FIELD2},
+			FIELD3 = #{FIELD3},
+			FIELD4 = #{FIELD4},
+			FIELD5 = #{FIELD5},
+			EDIT_TIME=#{EDIT_TIME},
+			EDIT_USER=#{EDIT_USER},
+			REPORT_NAME = #{REPORT_NAME},
+			STATE = #{STATE}
+		WHERE
+			REPORT_ID = #{REPORT_ID}
+	</update>
+	
+	<update id="updateReportInfosBySubmit" parameterType="java.util.Map">
+		UPDATE T_ANS_GENERAL_REPORT 
+		SET FIELD1 = #{FIELD1},
+			FIELD2 = #{FIELD2},
+			FIELD3 = #{FIELD3},
+			FIELD4 = #{FIELD4},
+			FIELD5 = #{FIELD5},
+			EDIT_TIME=#{EDIT_TIME},
+			EDIT_USER=#{EDIT_USER},
+			REPORT_NAME = #{REPORT_NAME},
+			STATE = 'UPLOAD' WHERE
+			REPORT_ID = #{REPORT_ID}
+	</update>
+	
+	<delete id="deletefile" parameterType="java.util.Map">
+		DELETE FROM T_COMM_FILE
+		WHERE FILE_ID = #{FILE_ID}
+		AND ASCRIPTION_TYPE = 'DISTINCTSOURCE_ANALYSIS'
+	</delete>
+	
+	<delete id="deleteGeneralReportById" parameterType="java.util.Map">
+		DELETE FROM T_ANS_GENERAL_REPORT
+		WHERE REPORT_ID = #{FILE_ID}
+		AND ASCRIPTION_TYPE = 'DISTINCTSOURCE_ANALYSIS'
+	</delete>
+	
+	<delete id="deleteSourceCountyById" parameterType="java.util.Map">
+		DELETE FROM T_ANS_SOURCE_COUNTY
+		WHERE ASCRIPTION_ID = #{FILE_ID}
+		AND ASCRIPTION_TYPE = 'DISTINCTSOURCE_ANALYSIS'
+	</delete>
+	
+	<!-- 根据报告id得到相应报告信息 -->
+	<select id="getReportInfoById" parameterType="java.util.Map" resultType="java.util.Map">
+		SELECT CONVERT
+		( VARCHAR ( 4 ), REPORT_TIME, 120 ) AS REPORT_TIME,
+		REPORT_NAME,
+		STATE,
+		FIELD1,
+		FIELD2,
+		FIELD3,
+		FIELD4,
+		FIELD5
+	FROM
+		T_ANS_GENERAL_REPORT 
+	WHERE
+		ASCRIPTION_TYPE = 'DISTINCTSOURCE_ANALYSIS' 
+		AND REPORT_ID = #{REPORT_ID}
+	</select>
+	
+	<!-- 根据报告id得到相应上传文件信息 -->
+	<select id="getUploadFileInfoById" parameterType="java.util.Map" resultType="java.util.Map">
+		SELECT
+		FILE_ID AS fileId,
+		FILE_FULL_NAME AS name,
+		FILE_FORMAT_SIZE AS size,
+		FILE_TYPE AS type,
+		CONVERT
+		( VARCHAR ( 20 ), CREATE_TIME, 120 ) AS uploadTime 
+	FROM
+		T_COMM_FILE 
+	WHERE
+		ASCRIPTION_ID =  #{REPORT_ID}
+		AND ASCRIPTION_TYPE = 'DISTINCTSOURCE_ANALYSIS' 
+		AND FILE_TYPE IN ('png','jpg','gif')
+	</select>
+	
+	<!-- 根据归属ID，查询文件列表 -->
+	<select id="queryFileListByAscriptionId" resultType="map">
+		SELECT FILE_ID, 
+			ASCRIPTION_TYPE, 
+			ASCRIPTION_ID, 
+			FILE_FULL_NAME, 
+			FILE_NAME, 
+			FILE_ALIAS, 
+			FILE_TYPE, 
+			FILE_SIZE, 
+			FILE_FORMAT_SIZE, 
+			FILE_SAVE_PATH, 
+			TRANSFORM, 
+			TRANSFORM_TYPE, 
+			FILE_SOURCE,
+			REMARK, 
+			SORT, 
+			CREATE_TIME CREATE_TIME_MSEC,
+			CONVERT(VARCHAR(19), CREATE_TIME, 120) CREATE_TIME, 
+			CREATE_USER 
+		FROM T_COMM_FILE WHERE ASCRIPTION_ID = #{ascriptionId}
+		<if test="fileSources != null and fileSources.length > 0">
+			AND FILE_SOURCE IN
+			<foreach collection="fileSources" item="item" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+		AND FILE_TYPE IN ('png','jpg','gif')
+		 ORDER BY CREATE_TIME_MSEC ASC, FILE_NAME ASC
+	</select>
+	
+	
+	
+	<!-- 根据填报年份得到所有报告信息 -->
+	<select id="queryReportInfosByYear" parameterType="java.util.Map" resultType="java.util.Map">
+		SELECT
+		A.REPORT_ID,
+ 		CONCAT( REPORT_NAME, CASE STATE WHEN 'UPLOAD' THEN '（'+EDIT_USER+'-已提交）' WHEN 'TEMP' THEN '（'+EDIT_USER+'）' END ) AS text,
+ 		A.REPORT_NAME,
+ 		CONVERT(VARCHAR ( 20 ), REPORT_TIME, 120 ) AS REPORT_TIME,
+		A.CREATE_USER,
+		A.FIELD1,
+		A.FIELD2,
+		A.FIELD3,
+		A.FIELD4,
+		A.FIELD5,
+		A.STATE,
+		B.FILE_TYPE,
+		B.FILE_SAVE_PATH
+	FROM
+		T_ANS_GENERAL_REPORT A INNER JOIN T_COMM_FILE B ON A.REPORT_ID = B.FILE_ID
+		AND A.ASCRIPTION_TYPE = 'DISTINCTSOURCE_ANALYSIS'
+		AND A.REPORT_TIME = #{REPORT_TIME}
+		ORDER BY A.CREATE_TIME ASC 
+	</select>
+	
+	<!-- 查询各个区县冬季不同污染颗粒组分占比 -->
+	<select id="queryCountyInWinter" parameterType="java.util.Map" resultType="java.util.Map">
+		SELECT
+		REGION_NAME,
+		P_AI as Al,
+		P_SI as SI,
+		P_K as K,
+		P_CA as CA,
+		P_FE as FE,
+		P_OC as OC,
+		P_EC as EC,
+		P_NH4 as NH4,
+		P_NO3 as NO3,
+		P_SO42 as SO42 
+	FROM
+		T_ANS_SOURCE_COUNTY 
+	WHERE
+		ASCRIPTION_ID = #{REPORT_ID}
+		AND POLLUTE_TYPE = #{PM} 
+		AND SEASON = 'W'
+	</select>
+	<!-- 查询各个区县冬季不同污染颗粒组分占比 -->
+	<select id="queryCountyInSummer" parameterType="java.util.Map" resultType="java.util.Map">
+		SELECT
+		REGION_NAME,
+		P_AI as Al,
+		P_SI as SI,
+		P_K as K,
+		P_CA as CA,
+		P_FE as FE,
+		P_OC as OC,
+		P_EC as EC,
+		P_NH4 as NH4,
+		P_NO3 as NO3,
+		P_SO42 as SO42 
+	FROM
+		T_ANS_SOURCE_COUNTY 
+	WHERE
+		ASCRIPTION_ID = #{REPORT_ID}
+		AND POLLUTE_TYPE = #{PM} 
+		AND SEASON = 'S'
+	</select>
+
+
+</mapper>
+

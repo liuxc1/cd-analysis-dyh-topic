@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="ths.project.analysis.analysisreport.mapper.ExpressListMapper">
+
+    <select id="selectOneByType" parameterType="string"
+            resultType="ths.project.analysis.analysisreport.entity.TNewsletterAnalysis"
+    >
+	 SELECT
+        MAX(REPORT_TIME) REPORT_TIME
+        FROM AIR_ANALYSISREPORT.T_NEWSLETTER_ANALYSIS
+        WHERE  DELETE_FLAG=0
+        AND (ASCRIPTION_TYPE = #{ascriptionType});
+	</select>
+
+    <!-- 查询特定状态记录数 -->
+    <select id="queryStateNumber" resultType="map">
+		SELECT COUNT(1) STATE_NUMBER
+		  FROM AIR_ANALYSISREPORT.T_NEWSLETTER_ANALYSIS
+		 WHERE ASCRIPTION_TYPE = #{ascriptionType}
+		   AND STATE = #{state}
+		   AND REPORT_TIME = CONVERT(DATETIME, #{reportTime}, 120)
+	</select>
+
+    <!-- 根据月份查询预报列表 -->
+    <select id="queryForecastListByMonth" resultType="map">
+        SELECT REPORT_ID, ASCRIPTION_TYPE,ASCRIPTION_TYPE_TWO,
+        ASCRIPTION_TYPE_THREE,ASCRIPTION_TYPE_FOUR,ASCRIPTION_TYPE_FIVE,REPORT_BATCH,
+        REPORT_NAME, CONVERT(VARCHAR, REPORT_TIME, 23) REPORT_TIME, REPORT_RATE,
+        REPORT_FREQUENCY, REPORT_TYPE, REPORT_TIP,
+        REMARK, FIELD1, FIELD2,
+        FIELD3, FIELD4, REPORT_INSCRIBE,
+        STATE, CONVERT(VARCHAR, CREATE_TIME, 120) CREATE_TIME, CREATE_DEPT,
+        CREATE_USER, CONVERT(VARCHAR, EDIT_TIME, 120) EDIT_TIME, EDIT_USER
+        FROM AIR_ANALYSISREPORT.T_NEWSLETTER_ANALYSIS
+        WHERE ASCRIPTION_TYPE = #{ascriptionType}
+        <if test="startMonth != null and startMonth != ''">
+            <![CDATA[AND REPORT_TIME >= CONVERT(DATETIME, #{startMonth} + '-01', 120)]]>
+        </if>
+        <if test="endMonth != null and endMonth != ''">
+            <![CDATA[AND REPORT_TIME < DATEADD(MONTH, 1, CONVERT(DATETIME, #{endMonth} + '-01', 120))]]>
+        </if>
+        AND DELETE_FLAG=0
+        ORDER BY REPORT_TIME ASC, CREATE_TIME ASC
+    </select>
+
+    <!-- 修改报告状态 -->
+    <select id="updateReportState">
+		UPDATE AIR_ANALYSISREPORT.T_NEWSLETTER_ANALYSIS SET STATE = #{state} WHERE REPORT_ID = #{reportId}
+	</select>
+
+    <select id="queryYesterdayData" resultType="java.util.HashMap">
+       SELECT
+        AVG(NO2) AS NO2AVERAGE_CONCENTRATION, --NO2平均浓度
+        AVG(PM2_5) AS PM25AVERAGE_CONCENTRATION,  --PM25平均浓度
+        AVG(PM10) AS PM10AVERAGE_CONCENTRATION	--PM10平均浓度
+        FROM
+        TENVAIR.T_ENV_AIRDATA_REGION_HOUR
+        WHERE
+        CODE_REGION = '510100000000'
+        AND MONITORTIME &gt;= #{yesterdayStartTime}
+        AND MONITORTIME &lt;= #{yesterdayEndTime}
+    </select>
+
+    <select id="queryReportTimeData" resultType="java.util.HashMap">
+     SELECT
+        SUM ( CASE WHEN CODE_AQILEVEL > 2 THEN 1 ELSE 0 END ) AS CONCENTRATION_EXCEEDED_HOURS, -- 浓度超标小时数
+        AVG(NO2) AS NO2AVERAGE_CONCENTRATION --NO2平均浓度
+        FROM
+        TENVAIR.T_ENV_AIRDATA_REGION_HOUR
+        WHERE
+        CODE_REGION = '510100000000'
+        AND MONITORTIME &gt;= #{reportStartTime}
+        AND MONITORTIME &lt;= #{reportEndTime}
+    </select>
+</mapper>

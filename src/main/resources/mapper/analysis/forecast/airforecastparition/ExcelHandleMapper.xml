@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="ths.project.analysis.air.partition.service.mapper.ExcelHandleMapper">
+	<delete id="delete">
+	DELETE FROM dbo.T_ANS_FLOW_AREA_3D_TEMP WHERE LOGINNAME=#{LOGINNAME} 
+	</delete>
+</mapper>

@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<taglib xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee web-jsptaglibrary_2_0.xsd"
+	version="2.0">
+	<!-- 标签库的版本 -->
+	<tlib-version>1.0</tlib-version>
+	<!-- 标签库在TLD中的描述名称 -->
+	<short-name>ths tag</short-name>
+	<tag>
+		<!-- 标签在jsp中使用名称 -->
+		<name>dictionary</name>
+		<!-- 标签指向的class文件 -->
+		<tag-class>ths.jdp.component.tags.DictionaryTag</tag-class>
+		<!-- 标签内容为空 -->
+		<body-content>empty</body-content>
+		<!-- 属性 -->
+		<attribute>
+	       <name>treeCode</name>
+	       <required>true</required>
+	    </attribute>
+	    <attribute>
+	       <name>value</name>
+	       <rtexprvalue>true</rtexprvalue>
+	       <required>true</required>
+	    </attribute>
+	    <attribute>
+	       <name>type</name>
+	       <required>false</required>
+	    </attribute>
+	    <attribute>
+	       <name>paramMap</name>
+	       <required>false</required>
+	       <rtexprvalue>true</rtexprvalue>
+	    </attribute>
+	</tag>
+	<!-- 行政区标签 -->
+	<tag>
+		<!-- 标签在jsp中使用名称 -->
+		<name>region</name>
+		<!-- 标签指向的class文件 -->
+		<tag-class>ths.jdp.component.tags.RegionTag</tag-class>
+		<!-- 标签内容为空 -->
+		<body-content>empty</body-content>
+		<!-- 属性 -->
+	    <attribute>
+	       <name>value</name>
+	       <rtexprvalue>true</rtexprvalue>
+	       <required>true</required>
+	    </attribute>
+	    <attribute>
+	       <name>paramMap</name>
+	       <required>false</required>
+	       <rtexprvalue>true</rtexprvalue>
+	    </attribute>
+	</tag>
+	<!-- 行业标签 -->
+	<tag>
+		<!-- 标签在jsp中使用名称 -->
+		<name>trade</name>
+		<!-- 标签指向的class文件 -->
+		<tag-class>ths.jdp.component.tags.TradeTag</tag-class>
+		<!-- 标签内容为空 -->
+		<body-content>empty</body-content>
+		<!-- 属性 -->
+	    <attribute>
+	       <name>value</name>
+	       <rtexprvalue>true</rtexprvalue>
+	       <required>true</required>
+	    </attribute>
+	    <attribute>
+	       <name>paramMap</name>
+	       <required>false</required>
+	       <rtexprvalue>true</rtexprvalue>
+	    </attribute>
+	</tag>
+	<!-- 用户标签 -->
+	<tag>
+		<!-- 标签在jsp中使用名称 -->
+		<name>user</name>
+		<!-- 标签指向的class文件 -->
+		<tag-class>ths.jdp.component.tags.UserTag</tag-class>
+		<!-- 标签内容为空 -->
+		<body-content>empty</body-content>
+		<!-- 属性 -->
+	    <attribute>
+	       <name>value</name>
+	       <rtexprvalue>true</rtexprvalue>
+	       <required>true</required>
+	    </attribute>
+	</tag>
+	<!-- 部门标签 -->
+	<tag>
+		<!-- 标签在jsp中使用名称 -->
+		<name>dept</name>
+		<!-- 标签指向的class文件 -->
+		<tag-class>ths.jdp.component.tags.DeptTag</tag-class>
+		<!-- 标签内容为空 -->
+		<body-content>empty</body-content>
+		<!-- 属性 -->
+	    <attribute>
+	       <name>value</name>
+	       <rtexprvalue>true</rtexprvalue>
+	       <required>true</required>
+	    </attribute>
+	</tag>
+	<!-- 角色标签 -->
+	<tag>
+		<!-- 标签在jsp中使用名称 -->
+		<name>role</name>
+		<!-- 标签指向的class文件 -->
+		<tag-class>ths.jdp.component.tags.RoleTag</tag-class>
+		<!-- 标签内容为空 -->
+		<body-content>empty</body-content>
+		<!-- 属性 -->
+	    <attribute>
+	       <name>value</name>
+	       <rtexprvalue>true</rtexprvalue>
+	       <required>true</required>
+	    </attribute>
+	</tag>
+	<!-- 岗位标签 -->
+	<tag>
+		<!-- 标签在jsp中使用名称 -->
+		<name>posi</name>
+		<!-- 标签指向的class文件 -->
+		<tag-class>ths.jdp.component.tags.PosiTag</tag-class>
+		<!-- 标签内容为空 -->
+		<body-content>empty</body-content>
+		<!-- 属性 -->
+	    <attribute>
+	       <name>value</name>
+	       <rtexprvalue>true</rtexprvalue>
+	       <required>true</required>
+	    </attribute>
+	</tag>
+	<!-- 群组标签 -->
+	<tag>
+		<!-- 标签在jsp中使用名称 -->
+		<name>group</name>
+		<!-- 标签指向的class文件 -->
+		<tag-class>ths.jdp.component.tags.GroupTag</tag-class>
+		<!-- 标签内容为空 -->
+		<body-content>empty</body-content>
+		<!-- 属性 -->
+	    <attribute>
+	       <name>value</name>
+	       <rtexprvalue>true</rtexprvalue>
+	       <required>true</required>
+	    </attribute>
+	</tag>
+	<!-- 复选框checked标签 -->
+	<tag>
+		<!-- 标签在jsp中使用名称 -->
+		<name>checked</name>
+		<!-- 标签指向的class文件 -->
+		<tag-class>ths.jdp.component.tags.CheckedTag</tag-class>
+		<!-- 标签内容为空 -->
+		<body-content>empty</body-content>
+		<!-- 属性 -->
+	    <attribute>
+	       <name>value</name>
+	       <rtexprvalue>true</rtexprvalue>
+	       <required>true</required>
+	    </attribute>
+	    <attribute>
+	       <name>optionValue</name>
+	       <rtexprvalue>true</rtexprvalue>
+	       <required>true</required>
+	    </attribute>
+	    <attribute>
+	       <name>separator</name>
+	    </attribute>
+	</tag>
+</taglib>

@@ -1,0 +1,820 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="ths.project.api.env_emergency.mapper.EnvEmergencyMapper">
+    <!-- 获取数量 -->
+    <select id="riskSensitive" resultType="ths.project.api.env_emergency.vo.EnvRiseVo">
+        SELECT
+            COUNT(1) AS ALLTOTAL,
+            SUM(CASE WHEN RISK_LEVEL_CODE = 4 OR RISK_LEVEL_CODE IS NULL THEN 1 ELSE 0 END) FIRSTLEVEL,
+            SUM(CASE WHEN RISK_LEVEL_CODE = 3 THEN 1 ELSE 0 END) SECONDLEVEL,
+            SUM(CASE WHEN RISK_LEVEL_CODE = 2 THEN 1 ELSE 0 END) THIRDLEVEL,
+            SUM(CASE WHEN RISK_LEVEL_CODE = 1 THEN 1 ELSE 0 END) FOURTHLEVEL,
+            SUM(CASE WHEN INVOLVE_AIR_RISK_ENTERPRISE_CODE = 'Y' THEN 1 ELSE 0 END)   GASNUM,
+            SUM(CASE WHEN INVOLVE_WATER_RISK_ENTERPRISE_CODE = 'Y' THEN 1 ELSE 0 END) WATERNUM,
+            SUM(CASE WHEN INVOLVE_AIR_RISK_ENTERPRISE_CODE = 'Y' AND INVOLVE_WATER_RISK_ENTERPRISE_CODE = 'Y' THEN 1 ELSE 0 END) UNALL
+        FROM
+            envEmergency.T_ENVIRONMENTAL_RISK_SOURCE_INFO
+    </select>
+
+    <!-- 环境受体统计 -->
+    <select id="environmentalReceptors" parameterType="java.util.Map" resultType="ths.project.api.env_emergency.vo.EnvReceptorsVo">
+        WITH A AS(
+            select
+                TYPE_CODE,
+                TYPE,
+                COUNT(1) AS TOTAL,
+                'gas' AS MONTYPE
+            from
+                envEmergency.T_ENVIRONMENTAL_RISK_RECEPTOR_GAS
+            group by
+                TYPE_CODE,
+                TYPE
+            UNION ALL
+            SELECT
+                TYPE_CODE,
+                WATER_TYPE,
+                COUNT(1) AS TOTAL,
+                'water' AS MONTYPE
+            FROM
+                envEmergency.T_ENVIRONMENTAL_RISK_RECEPTOR
+            group by
+                TYPE_CODE,
+                WATER_TYPE
+        )
+        SELECT * FROM A
+        <where>
+            <if test="monType !=null and monType !=''">
+                AND MONTYPE = #{monType}
+            </if>
+        </where>
+    </select>
+
+    <!-- 统计获取联系人个数-->
+    <select id="getContactNums" resultType="ths.project.api.env_emergency.vo.ContactNumsVo"
+            parameterType="java.util.Map">
+        select
+            sum(case when type = 1 then 1 else 0 end) MANAGEMENT,
+            sum(case when type = 2 then 1 else 0 end) EXPERTS,
+            sum(case when type = 3 then 1 else 0 end) COMPANY,
+            sum(case when type = 4 then 1 else 0 end) RESCUE,
+            sum(case when type = 5 then 1 else 0 end) ENVIRONMENT
+        from
+            envEmergency.T_ENVIRONMENT_COMMUNICATION
+    </select>
+
+    <!-- 应急保障列表 -->
+    <select id="getContact" resultType="java.util.Map" parameterType="java.util.Map">
+        select * from (
+            select
+                NAME,
+                FIXED_MOBILE,
+                MOBILE,
+                TYPE MONTYPE,
+                ORGANIZATION,
+                row_number() OVER (PARTITION BY type ORDER BY NAME) as num
+            from
+                envEmergency.T_ENVIRONMENT_COMMUNICATION
+            where
+                1=1
+            <if test="securityKeyWord != null and securityKeyWord != ''">
+                <bind name="securityKeyWordValue" value="'%' + securityKeyWord + '%'"/>
+                and NAME like #{securityKeyWordValue}
+            </if>
+            <if test="securityType != null and securityType != ''">
+                and TYPE = #{securityType}
+            </if>
+            ) t
+        where
+            num &lt;= 100
+    </select>
+
+    <!-- 获取物资同比占比-->
+    <select id="getSupplies" parameterType="java.util.Map" resultType="ths.project.api.env_emergency.vo.EnvSuppliesVo">
+        with
+        A AS (
+            select
+                sum(case when name='安全防护' then cast(NUMS as decimal) end) safe,
+                sum(case when name='污染源切断' then cast(NUMS as decimal) end) pollution_Cut,
+                sum(case when name='污染物控制' then cast(NUMS as decimal) end) pollution_Ctr,
+                sum(case when name='污染物收集' then cast(NUMS as decimal) end) pollution_Collect,
+                sum(case when name='污染物降解' then cast(NUMS as decimal) end) pollution_Degradation,
+                sum(case when name='应急通信和指挥' then cast(NUMS as decimal) end) communications_Command,
+                sum(case when name='环境监测' then cast(NUMS as decimal) end) environmental_Monitoring,
+                sum(case when name!='其它' then cast(NUMS as decimal) end) total
+            from
+                envEmergency.T_ENVIRONMENT_SUPPLIES
+            where
+                PATINDEX('%[^0-9|.|-|+]%', NUMS) = 0
+                <if test="type!=null and type!=''">
+                    and TO_TYPE=#{type}
+                </if>
+            ),
+        B AS (
+        select
+            safe/(total*0.01) safe,
+            pollution_Cut/(total*0.01) pollution_Cut,
+            pollution_Ctr/(total*0.01) pollution_Ctr,
+            pollution_Collect/(total*0.01) pollution_Collect,
+            pollution_Degradation/(total*0.01) pollution_Degradation,
+            communications_Command/(total*0.01) communications_Command,
+            environmental_Monitoring/(total*0.01) environmental_Monitoring,
+            total
+        from
+            A
+        )
+        select
+            round(safe,4) safe,
+            round(pollution_Cut,4) pollution_Cut,
+            round(pollution_Ctr,4) pollution_Ctr,
+            round(pollution_Collect,4) pollution_Collect,
+            round(pollution_Degradation,4) pollution_Degradation,
+            round(communications_Command,4) communications_Command,
+            round(environmental_Monitoring,4) environmental_Monitoring,
+            round(total,0) total
+        from
+            B
+    </select>
+
+    <!-- 查询应急预案 -->
+    <select id="getContingencyPlan" parameterType="java.util.Map" resultType="java.util.Map">
+        SELECT
+            ID,
+            CONTENT,
+            DETAILS,
+            HASCHILD
+        FROM
+            envEmergency.T_ENVIRONMENT_PREVENTION
+        <where>
+            <if test="planCode !=null and planCode !=''">
+                AND PLAN_CODE = #{planCode}
+            </if>
+            <if test="parentId !=null and parentId !=''">
+                AND PARENT_ID = #{parentId}
+            </if>
+            <if test="planType !=null and planType !=''">
+                AND NVARCHAR1 = #{planType}
+            </if>
+        </where>
+    </select>
+
+    <!-- 环境受体列表 -->
+    <select id="sensitiveList" parameterType="java.util.Map" resultType="ths.project.api.env_emergency.vo.SensitiveListVo">
+        WITH A AS (
+            SELECT
+                PK_ID AS CODE,
+                WATER_NAME AS NAME,
+                TYPE_CODE,
+                WATER_TYPE AS TYPE,
+                'gas' AS MONTYPE
+            FROM
+                envEmergency.T_ENVIRONMENTAL_RISK_RECEPTOR
+            UNION ALL
+            SELECT
+                PK_ID AS CODE,
+                GAS_RISK_NAME AS NAME,
+                TYPE_CODE,
+                TYPE,
+                'water' AS MONTYPE
+            FROM
+                envEmergency.T_ENVIRONMENTAL_RISK_RECEPTOR_GAS
+        )
+        SELECT
+            *
+        FROM
+            A
+        <where>
+            <if test="sensitiveLevel != null and sensitiveLevel != ''">
+                and TYPE_CODE = #{sensitiveLevel}
+            </if>
+            <if test="sensitiveKeyWord != null and sensitiveKeyWord != ''">
+                and NAME like concat('%', #{sensitiveKeyWord}, '%')
+            </if>
+        </where>
+    </select>
+
+    <!-- 查询应急预案列表-->
+    <select id="getPlanList" resultType="ths.project.service.common.vo.drowDown.DropDownVo">
+        SELECT
+            distinct
+            PLAN_CODE as CODE,
+            NVARCHAR2 AS NAME
+        FROM
+            envEmergency.T_ENVIRONMENT_PREVENTION
+        <where>
+            <if test="name !=null and name !=''">
+                AND NVARCHAR2 LIKE CONCAT(CONCAT('%',#{name}),'%')
+            </if>
+        </where>
+        order by
+            PLAN_CODE desc
+    </select>
+
+    <insert id="insertTable">
+        insert into
+            envEmergency.T_ENVIRONMENT_SUPPLIES (
+                PKID,
+                MONITORTIME,
+                NAME,
+                NUMS,
+                TO_TYPE,
+                TO_COMPARE,
+                MATERIAL_NAME)
+        VALUES (
+            #{PKID},
+            SYSDATE,
+            #{NAME},
+            #{NUMS},
+            #{TO_TYPE},
+            #{TO_COMPARE},
+            #{MATERIAL_NAME})
+    </insert>
+
+    <!-- 应急物质列表-->
+    <select id="getEmergencySupportMaterial" parameterType="java.util.Map" resultType="ths.project.api.env_emergency.vo.EmergencyMaterialVo">
+        SELECT
+            entCode,
+            entName,
+            count(1) materialNum
+        FROM (
+            SELECT
+                A.PKID AS entCode,
+                A.NAME AS entName,
+                T.TO_TYPE AS entType,
+                T.NAME AS materialType,
+                T.MATERIAL_NAME,
+                T.NUMS AS materialNum,
+                T.MATERIAL_TYPE AS typeCode
+            FROM
+                envEmergency.T_ENVIRONMENT_SUPPLIES T
+            RIGHT JOIN
+                envEmergency.T_ENVIRONMENT_SOCIAL_COMPANY A ON T.TO_COMPARE = A.PKID
+            WHERE
+                T.TO_TYPE = 2 AND NUMS !='0'
+            UNION ALL
+            SELECT
+                A.PKID AS entCode,
+                A.NAME AS entName,
+                T.TO_TYPE AS entType,
+                T.NAME AS materialType,
+                T.MATERIAL_NAME,
+                T.NUMS AS materialNum,
+                T.MATERIAL_TYPE AS typeCode
+            FROM
+                envEmergency.T_ENVIRONMENT_SUPPLIES T
+            RIGHT JOIN
+                envEmergency.T_ENVIRONMENT_GOVERNMENT_COMPANY A ON T.TO_COMPARE = A.PKID
+            WHERE
+                T.TO_TYPE = 1 AND NUMS !='0'
+        ) T
+        <where>
+            <if test="entName !=null and entName != ''">
+                AND entName LIKE CONCAT('%',#{entName},'%')
+            </if>
+            <if test="materialType !=null and materialType !=''">
+                AND typeCode =#{materialType}
+            </if>
+            <if test="entType !=null and entType !=''">
+                AND entType =#{entType}
+            </if>
+        </where>
+        group by
+            entCode, entName
+    </select>
+
+    <!-- 应急物质详情-->
+    <select id="suppliesDetail" parameterType="java.util.Map" resultType="ths.project.api.env_emergency.vo.EvnNsuppliesDetail">
+        <choose>
+            <when test='emergencyEnterpriseType == "social"'>
+                SELECT
+                    NAME,
+                    LONGITUDE,
+                    LATITUDE,
+                    CONCAT_MAN,
+                    CONCAT_MOBILE,
+                    ADDRESS,
+                    UNIT
+                FROM
+                    ENVEMERGENCY.T_ENVIRONMENT_SOCIAL_COMPANY
+                WHERE
+                MON_TYPE = #{emergencyEnterprisePkid}
+            </when>
+            <otherwise>
+                SELECT
+                    NAME,
+                    LONGITUDE,
+                    LATITUDE,
+                    '' AS CONCAT_MAN,
+                    '' AS CONCAT_MOBILE,
+                    '' AS ADDRESS,
+                    '' AS UNIT
+                FROM
+                    ENVEMERGENCY.T_ENVIRONMENTAL_GOVERNMENT_COMPANY
+                WHERE
+                    PKID = #{emergencyEnterprisePkid}
+            </otherwise>
+        </choose>
+    </select>
+
+    <!-- 应急物质详情列表-->
+    <select id="suppliesDetailList" parameterType="java.util.Map" resultType="ths.project.api.env_emergency.vo.SuppliesDetailListVo">
+        <choose>
+            <when test='emergencyEnterpriseType == "social"'>
+                SELECT
+                    b.NAME,
+                    b.MATERIAL_NAME,
+                    b.NUMS
+                FROM
+                    ENVEMERGENCY.T_ENVIRONMENT_SOCIAL_COMPANY a
+                LEFT JOIN
+                    ENVEMERGENCY.T_ENVIRONMENT_SUPPLIES b ON A.MON_TYPE = b.TO_COMPARE
+                WHERE
+                    a.MON_TYPE = #{emergencyEnterprisePkid} AND b.NUMS>0
+                    <if test='emergencySuppliesKeyWord != null and emergencySuppliesKeyWord != ""'>
+                        <bind name="emergencySuppliesKeyWordValue" value="'%' + emergencySuppliesKeyWord + '%'"/>
+                        AND MATERIAL_NAME LIKE #{emergencySuppliesKeyWordValue}
+                    </if>
+            </when>
+            <otherwise>
+                SELECT
+                    b.NAME,
+                    b.MATERIAL_NAME,
+                    b.NUMS
+                FROM
+                    ENVEMERGENCY.T_ENVIRONMENTAL_GOVERNMENT_COMPANY a
+                LEFT JOIN
+                    ENVEMERGENCY.T_ENVIRONMENT_SUPPLIES b ON cast(a.PKID AS VARCHAR(200)) = b.TO_COMPARE
+                WHERE
+                    a.PKID = #{emergencyEnterprisePkid} AND b.NUMS>0
+                    <if test='emergencySuppliesKeyWord != null and emergencySuppliesKeyWord != ""'>
+                        <bind name="emergencySuppliesKeyWordValue" value="'%' + emergencySuppliesKeyWord + '%'"/>
+                        AND MATERIAL_NAME LIKE #{emergencySuppliesKeyWordValue}
+                    </if>
+            </otherwise>
+        </choose>
+    </select>
+
+    <!-- 应急物资列表 -->
+    <select id="suppliesList" parameterType="java.util.Map" resultType="ths.project.api.env_emergency.vo.MaterialStatisticsVo">
+        SELECT
+            a.NAME,
+            a.PKID AS EMERGENCY_ENTERPRISE_DEFAULT_PKID,
+            #{emergencyBelongType} AS EMERGENCY_ENTERPRISE_DEFAULT_TYPE,
+            COUNT(MATERIAL_NAME) MATERIAL_NUM
+        FROM
+            <if test='emergencyBelongType == "social"'>
+                ENVEMERGENCY.T_ENVIRONMENT_SOCIAL_COMPANY a
+            </if>
+            <if test='emergencyBelongType == "government"'>
+                ENVEMERGENCY.T_ENVIRONMENTAL_GOVERNMENT_COMPANY a
+            </if>
+        LEFT JOIN
+            (select
+                *
+            from
+                ENVEMERGENCY.T_ENVIRONMENT_SUPPLIES
+            where
+                1 = 1
+                <if test='emergencyBelongType == "government"'>
+                    AND TO_TYPE = 1
+                </if>
+                <if test='emergencyBelongType == "social"'>
+                    AND TO_TYPE = 2
+                </if>
+            ) b ON cast(a.PKID AS VARCHAR(200)) = b.TO_COMPARE
+        WHERE
+            1 = 1
+            <if test='emergencyType != null and emergencyType != ""'>
+                AND b.NAME = #{emergencyType}
+            </if>
+            <if test='materialUnitName != null and materialUnitName != ""'>
+                <bind value=" '%' + materialUnitName + '%'" name="materialUnitNameValue"/>
+                AND b.NAME LIKE #{materialUnitNameValue}
+            </if>
+        GROUP BY
+            a.NAME,
+            a.PKID
+        ORDER BY
+            a.PKID
+    </select>
+
+    <!-- 应急物质类型下拉 -->
+    <select id="getMaterialType" resultType="ths.project.service.common.vo.drowDown.DropDownVo">
+        SELECT
+            '' AS CODE,
+            '全部' as NAME
+        FROM
+            DUAL
+        UNION ALL
+        SELECT
+            DISTINCT
+            MATERIAL_TYPE AS CODE,
+            NAME
+        FROM
+            envEmergency.T_ENVIRONMENT_SUPPLIES
+    </select>
+
+    <!-- 风险企业列表 -->
+    <select id="getRiskEnt" parameterType="java.util.Map" resultType="ths.project.api.env_emergency.vo.EnvRiskDetailsVo">
+        SELECT
+            A.pkid,
+            A.ENTERPRISE_NAME, --企业名称
+            (case when A.INVOLVE_AIR_RISK_ENTERPRISE is not null and A.INVOLVE_WATER_RISK_ENTERPRISE is not null then '涉气丶涉水'
+            when A.INVOLVE_AIR_RISK_ENTERPRISE is not null and A.INVOLVE_WATER_RISK_ENTERPRISE is null then '涉气'
+            when A.INVOLVE_AIR_RISK_ENTERPRISE is null and A.INVOLVE_WATER_RISK_ENTERPRISE is not null then '涉水' end) type,
+            A.RISK_LEVEL riskLevel--企业环境风险等级
+                ,A.INDUSTRY_CODE industry_code, --行业代码
+                A.INDUSTRY_NAME INDUSTRY_NAME, --行业类别
+                A.COMMUNITY COMMUNITY, --社区
+                A.STREET STREET, --街道
+                A.INDUSTRIAL_PARK INDUSTRIAL_PARK, --工业区名称
+                A.INDUSTRIAL_ZONE INDUSTRIAL_ZONE, --工业园名称
+                A.LONGITUDE LONGITUDE, --经度
+                A.LATITUDE LATITUDE, --纬度
+                A.INVOLVE_WATER_RISK_ENTERPRISE INVOLVE_WATER_RISK_ENTERPRISE,--企业类型
+                A.INVOLVE_AIR_RISK_ENTERPRISE INVOLVE_AIR_RISK_ENTERPRISE,
+                A.RECORD RECORD,--是否已备案
+                A.SEWAGE_EMISSIONS SEWAGE_EMISSIONS, --污染物排放去向
+                A.RISK_SUBSTANCE_TYPE RISK_SUBSTANCE_TYPE,--环境风险物质种类
+                A.EMERGENT_RISK_TYPE EMERGENT_RISK_TYPE, --可能造成的突发环境风险事件类型
+                '-' suppliesTYpe, --应急物资类型
+                B.UNIT supportUnit
+        FROM
+            envEmergency.T_ENVIRONMENTAL_RISK_SOURCE_INFO A
+        left join
+            envEmergency.T_ENVIRONMENT_SOCIAL_COMPANY B on A.ENTERPRISE_NAME=B.name
+        where
+            1=1
+            <if test="riskLevel !=null and riskLevel !=''">
+                AND A.RISK_LEVEL_CODE = #{riskLevel}
+            </if>
+            <if test="code !=null and code !=''">
+                AND A.PKID = #{code}
+            </if>
+            <if test="name!=null and name!=''">
+                AND A.ENTERPRISE_NAME like concat('%', #{name}, '%')
+            </if>
+            <choose>
+                <when test="riskType!=null and riskType!=''">
+                    <choose>
+                        <when test="riskType==1">
+                            --只涉气企业
+                            and INVOLVE_AIR_RISK_ENTERPRISE is not null
+                        </when>
+                        <when test="riskType==2">
+                            --只涉水企业
+                            and INVOLVE_WATER_RISK_ENTERPRISE is not null
+                        </when>
+                        <otherwise>
+                            --同时涉水企业,涉气企业
+                            and INVOLVE_AIR_RISK_ENTERPRISE is not null and INVOLVE_WATER_RISK_ENTERPRISE is not null
+                        </otherwise>
+                    </choose>
+                </when>
+            </choose>
+    </select>
+
+    <!-- 应急预案列表 -->
+    <select id="emergencyList">
+        select
+            enterprise_name name,
+            environmental_risk_type type,
+            count(1) nums,
+            B.PS_CODE code
+        from
+            envEmergency.T_MANAGEMEN_SITUATION_ANALYSIS A
+        left join
+            envEmergency.T_BASE_ENTERPRISE_INFO B on A.enterprise_name = B.ps_name
+        group by
+            enterprise_name,
+            environmental_risk_type,
+            B.PS_CODE
+    </select>
+
+    <!-- 应急避难场所统计 -->
+    <select id="shelterStatistics" resultType="ths.project.service.common.vo.SimpleEchartsVo">
+        SELECT
+            REGIONCODE streetCode,
+            STREET AS monName,
+            COUNT(1) AS monValue
+        from
+            envEmergency.T_EMERGENCY_SHELTER_LIST
+        GROUP BY
+            REGIONCODE,
+            STREET
+    </select>
+
+    <!-- 应急避难场所列表 -->
+    <select id="shelterList" resultType="ths.project.api.env_emergency.vo.ShelterListVo">
+        SELECT
+            PKID as code,
+            SHELTER_NAME as name,
+            IN_OUT_DOOR as type,
+            CAPACITY as nums,
+            AREA
+        from
+            envEmergency.T_EMERGENCY_SHELTER_LIST
+        <where>
+            <if test='sheltKeyWrod != null and sheltKeyWrod != ""'>
+                AND SHELTER_NAME like concat('%', #{sheltKeyWrod}, '%')
+            </if>
+            <if test='sheltStreetCode == "1"'>
+                AND STREET = '大鹏办事处'
+            </if>
+            <if test='sheltStreetCode == "2"'>
+                AND STREET = '南澳办事处'
+            </if>
+            <if test='sheltStreetCode == "3"'>
+                AND STREET = '葵涌办事处'
+            </if>
+        </where>
+    </select>
+
+    <!-- 应急避难场所详情 -->
+    <select id="shelterDetail" resultType="ths.project.api.env_emergency.vo.ShelterDetailVo">
+        SELECT
+            PKID AS CODE,
+            SHELTER_NAME AS NAME,
+            STREET,
+            ADDRESS,
+            IN_OUT_DOOR AS TYPE,
+            CONTACT_PERSON AS CONTACT,
+            CONTACT_PHONE AS MOBILE,
+            CAPACITY AS NUMS,
+            AREA,
+            LONGITUDE,
+            LATITUDE
+        FROM
+            envEmergency.T_EMERGENCY_SHELTER_LIST
+        <where>
+            <if test="code !=null and code !=''">
+                AND PKID = #{code}
+            </if>
+        </where>
+    </select>
+
+    <!-- 环境受体详情-->
+    <select id="sensitive" resultType="ths.project.api.env_emergency.vo.EnvSensitiveVo">
+        <choose>
+            <when test="type!=null and type!=''">
+                <choose>
+                    <when test="type=='gas'">
+                        select
+                            GAS_RISK_NAME name,
+                            longitude,
+                            latitude,
+                            STREET_NAME street,
+                            AREA area,
+                            DENSITY_OF_POPULATION people,
+                            TYPE
+                        from
+                            envEmergency.T_ENVIRONMENTAL_RISK_RECEPTOR_GAS
+                    </when>
+                    <otherwise>
+                        SELECT
+                            WATER_NAME name ,
+                            longitude,
+                            latitude,
+                            STREET_NAME + '街道' street,
+                            WATER_AREA area,
+                            WATER_SCALE scale,
+                            WATER_RESOUCE_AMOUNT quantity,
+                            WATER_LENGTH  length,
+                            WATER_QUALITY waterLevel
+                        FROM
+                            envEmergency.T_ENVIRONMENTAL_RISK_RECEPTOR
+                    </otherwise>
+                </choose>
+            </when>
+            <otherwise>
+                SELECT
+                    WATER_NAME name ,
+                    longitude,
+                    latitude,
+                    STREET_NAME + '街道' street,
+                    WATER_AREA area,
+                    WATER_SCALE scale,
+                    WATER_RESOUCE_AMOUNT quantity,
+                    WATER_LENGTH  length,
+                    WATER_QUALITY waterLevel
+                FROM
+                    envEmergency.T_ENVIRONMENTAL_RISK_RECEPTOR
+            </otherwise>
+        </choose>
+        where
+            PK_ID = #{code}
+    </select>
+
+    <!-- 典型突发事件情景分析列表 -->
+    <select id="emergencyScenario" parameterType="java.util.Map" resultType="ths.project.api.env_emergency.vo.EmergencyScenarioVo">
+        select
+            pk_id id,
+            CLASSIFY name
+            <if test="id!=null and id!=''">
+                ,
+                accident_Source,
+                CALCULATION,
+                EQUIPMENT_ANALYSIS,
+                MATERIAL_ANALYSIS,
+                result_Analysis
+            </if>
+        from
+            envEmergency.T_ENVIRONMENTAL_TYPICAL
+        where
+            1 = 1
+            <if test="name!=null and name!=''">
+                and CLASSIFY like concat('%', #{name}, '%')
+            </if>
+            <if test="id!=null and id!=''">
+                and pk_id = #{id}
+            </if>
+    </select>
+
+    <!-- 应急事件分析列表 -->
+    <select id="eventsList" parameterType="java.util.Map" resultType="ths.project.api.env_emergency.vo.EnvEventsListVo">
+        select
+            NAME evenName,
+            code evenCode,
+            TYPE_CODE type,
+            LEVEL_CODE level,
+            '大鹏新区' region,
+            happen_time time,
+            '水,锛' chemicalInvolvement
+        from
+            envEmergency.T_EMERGENCY_INCIDENT_INFO
+        where
+            1 = 1
+            <if test="name != null and name != ''">
+                and NAME like concat('%', #{name}, '%')
+            </if>
+    </select>
+
+    <!-- 应急事件列表 -->
+    <select id="emergencyEventsList" resultType="ths.project.api.env_emergency.vo.EmergencyEventsListVo">
+        select
+            code id,
+            name,
+            HAPPEN_TIME time,
+            '-' chemicals,
+            LEVEL_CODE level,
+            '-' region
+        from
+            envEmergency.T_EMERGENCY_INCIDENT_INFO
+        where
+            1 = 1
+            <if test="name!=null and name!=''">
+                and name like concat('%',#{name},'%')
+            </if>
+    </select>
+
+    <!-- 环境风险物质存放情况 -->
+    <select id="riskMaterial" parameterType="java.util.Map" resultType="java.util.Map">
+        SELECT
+            RISK_SUBSTANCE_TYPE
+        FROM
+            envEmergency.T_ENVIRONMENTAL_RISK_SOURCE_INFO
+        where
+            RISK_SUBSTANCE_TYPE is not null
+            and pkid = #{code}
+    </select>
+
+    <!-- 化学产品列表 -->
+    <select id="chemicals" parameterType="java.util.Map" resultType="ths.project.api.env_emergency.vo.ChemicalsVo">
+        select
+            id code,
+            name,
+            desc1 english,
+            desc2 molecular,
+            desc3 casNum
+        from
+            envEmergency.T_CHEMICALS
+        where
+            type1 = '1'
+            <if test="name != null and name != ''">
+                and name like concat('%',#{name},'%')
+            </if>
+            <if test="casNum != null and casNum != ''">
+                and desc3 = #{casNum}
+            </if>
+    </select>
+
+    <!-- 应急预案详情 -->
+    <select id="emergencyDetail" parameterType="java.util.Map" resultType="ths.project.api.env_emergency.vo.EmergencyDetailVo">
+        select
+            A.code id,
+            A.name,
+            B.URL url
+        from
+            envEmergency.T_EMERGENCY_CASE A
+        left join
+            envEmergency.T_FILE_DATA B on A.URL_ID=B.ID
+        where
+            A.is_del = '0'
+            <if test="code != null and code != ''">
+                and ENTERPRISE_CODE = #{code}
+            </if>
+    </select>
+
+    <!-- 应急预案删除(或新增暂定) -->
+    <update id="emergencyEdit" parameterType="java.util.Map">
+        update
+        <choose>
+            <when test="type==1">
+                envEmergency.T_ENVIRONMENT_PREVENTION --政府预案
+                set is_del = '1' where PLAN_CODE = #{id}
+            </when>
+            <otherwise>
+                envEmergency.T_EMERGENCY_RESPONSE_PLAN  --企业预案
+                set IS_DELETE = '1' where CODE = #{id}
+            </otherwise>
+        </choose>
+    </update>
+
+    <update id="emergencyEdit1" parameterType="java.util.Map">
+        update
+            envEmergency.T_EMERGENCY_CASE --政府预案
+        set
+            is_del = '1'
+        where
+            1 = 1
+        <choose>
+            <when test="type==1">
+                and  TYPE = '政府' and code = #{id} and ENTERPRISE_CODE = #{code}
+            </when>
+            <otherwise>
+                and TYPE = '企业' and code = #{id} and ENTERPRISE_CODE = #{code}
+            </otherwise>
+        </choose>
+    </update>
+
+    <select id="emergencyevents" resultType="java.util.Map">
+        SELECT
+            distinct PLAN_CODE as CODE,NVARCHAR2 AS NAME
+        FROM envEmergency.T_ENVIRONMENT_PREVENTION
+        <where>
+            <if test="name !=null and name !=''">
+                AND NVARCHAR2 LIKE CONCAT('%',#{name}),'%')
+            </if>
+        </where>
+        order by PLAN_CODE desc
+    </select>
+
+    <select id="getSuppliesApp" resultType="java.util.Map">
+        with A AS (select NAME, PKID, '政府物资' type
+                   from envEmergency.T_ENVIRONMENTAL_GOVERNMENT_COMPANY
+                   union all
+                   select NAME, MON_TYPE PKID, '企业物资' type
+                   from envEmergency.T_ENVIRONMENT_SOCIAL_COMPANY),
+             B as (select MATERIAL_NAME + '(' + NUMS + ')' concatsss, TO_COMPARE
+                   from envEmergency.T_ENVIRONMENT_SUPPLIES
+                   where NUMS is not null
+                     and NUMS!='0'),
+             C as (SELECT STUFF((SELECT ',' + convert(varchar, concatsss)
+                                 FROM B
+                                 where b.TO_COMPARE = f.TO_COMPARE
+                 FOR xml path('')), 1, 1, '') hh,
+                          TO_COMPARE
+                   from B as F
+                   group by TO_COMPARE)
+        select C.TO_COMPARE id,--公司id
+               A.NAME,--公司名称
+               A.type,--物资类型
+               C.hh         suppliesName--物资名称
+        from C
+                 left join A ON A.PKID = C.TO_COMPARE
+        where A.NAME is not null
+          and datalength(A.NAME) > 0
+        <choose>
+            <when test="type!=null and TYPE!='' and type==1">
+                AND type='政府物资'
+            </when>
+            <when test="type!=null and TYPE!='' and type==2">
+                AND type='企业物资'
+            </when>
+        </choose>
+
+        <if test="name!=null and name!=''">
+            AND A.NAME like CONCAT('%',#{name},'%')
+        </if>
+        <if test="suppliesName!=null and suppliesName!=''">
+            AND C.hh like CONCAT('%',#{suppliesName},'%')
+        </if>
+    </select>
+
+    <select id="getSupplisCompan" resultType="java.util.Map">
+    select * from (
+            select PKID,NAME,LONGITUDE,LATITUDE,'' CONCAT_MAN,'' CONCAT_MOBILE,'' ADDRESS
+            from envEmergency.T_ENVIRONMENTAL_GOVERNMENT_COMPANY
+            union all
+            select  MON_TYPE PKID,NAME,LONGITUDE,LATITUDE,CONCAT_MAN,CONCAT_MOBILE,ADDRESS
+            from envEmergency.T_ENVIRONMENT_SOCIAL_COMPANY) A
+    where PKID=#{id}
+    </select>
+
+    <select id="getSuppliesList" resultType="java.util.Map">
+        select
+            MATERIAL_NAME,NUMS
+        from envEmergency.T_ENVIRONMENT_SUPPLIES
+        where TO_COMPARE=#{id} and NUMS is not null and NUMS!='0'
+    </select>
+</mapper>

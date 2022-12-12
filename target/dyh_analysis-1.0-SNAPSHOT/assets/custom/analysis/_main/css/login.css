@@ -1,0 +1,239 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+body,
+html {
+    max-width: 1920px;
+    height: 100%;
+    min-height: 551px;
+}
+
+input {
+    margin-bottom: 0;
+}
+
+.container {
+    width: 100%;
+    min-width: 1360px;
+    height: 100%;
+    background-image: url(../image/login/login-bg.png);
+    max-width: 1920px;
+    background-size: cover;
+}
+
+.container-logo {
+    /*width: 520px;
+    height: 480px;*/
+    width: 600px;
+    height: 490px;
+    background-image: url(../image/login/pic.png);
+    background-size: cover;
+}
+
+.container-title {
+    background: url(../image/login/login-logo.png);
+    height: 56px;
+    width: 588px
+}
+
+.container-logo::after {
+    content: '';
+    clear: both;
+    display: inline-block;
+}
+
+.login-form {
+    width: 340px;
+    height: 380px;
+    background: #fff;
+    padding-left: 30px;
+    padding-right: 30px;
+    box-sizing: border-box;
+    margin-top: 30px;
+}
+
+.login-form::after {
+    content: '';
+    clear: both;
+    display: inline-block;
+}
+
+.login-form h1 {
+    height: 23px;
+    font-size: 24px;
+    font-family: SimHei;
+    font-weight: 400;
+    color: rgba(19, 131, 246, 1);
+    line-height: 30px;
+    margin: 35px 0 0 0;
+}
+
+.login-form input.user-name,
+.login-form input.password {
+    text-indent: 4.5rem;
+}
+
+.login-form input.user-name,
+.login-form input.password,
+.submit {
+    display: block;
+    height: 44px;
+    width: 280px;
+    margin: 0 auto;
+    margin-top: 20px;
+    border: 1px solid rgba(201, 201, 201, 1);
+    border-radius: 3px;
+}
+
+.submit {
+    cursor: pointer;
+}
+
+.button-cover {
+    width: 280px;
+    height: 44px;
+    border-radius: 2px;
+    position: absolute;
+    bottom: 45px;
+}
+
+.button-cover:hover {
+    background: rgba(255, 255, 255, .1);
+    cursor: pointer;
+}
+
+.login-form input.user-name::placeholder,
+.login-form input.password::placeholder,
+.verification-code input::placeholder {
+    color: #cfcfcf;
+    margin-left: 10px;
+}
+
+.login-form input.user-name,
+.login-form input.password,
+.verification-code input {
+    color: #666;
+}
+
+.container input {
+    box-sizing: border-box;
+}
+
+.login-form input.user-name:focus,
+.login-form input.password:focus,
+.login-form .verification-code input:focus,
+.verification-code input:focus {
+    outline: none;
+    border: 1px solid #1383F6;
+}
+
+.verification-code {
+    margin: 0 auto;
+    margin-top: 20px;
+    width: 280px;
+}
+
+.verification-code input {
+    height: 44px;
+    border: 1px solid rgba(201, 201, 201, 1);
+    border-radius: 3px;
+    text-indent: 1rem;
+}
+
+.verification-code .code {
+    width: 107px;
+    height: 44px;
+    float: right;
+}
+
+.verification-code .code::after {
+    content: '';
+    display: block;
+    clear: both;
+}
+
+.remember {
+    margin: 0 auto;
+    margin-top: 20px;
+    color: #666666;
+    width: 320px;
+}
+
+.remember label {
+    user-select: none;
+}
+
+.submit {
+    border-radius: 2px;
+    background-image: url(../image/login/submit-bg.png);
+    border: none;
+    color: #fff;
+    font-size: 18px;
+    background-size: cover;
+}
+
+input[type="checkbox"] {
+    display: none;
+}
+
+input[type="checkbox"]+label {
+    background-position: 0 3px;
+    background-image: url("../image/login/check.png");
+    background-repeat: no-repeat;
+}
+
+input[type="checkbox"]:checked+label {
+    background-image: url("../image/login/checked.png");
+    background-position: 0 3px;
+    background-repeat: no-repeat;
+}
+
+.user-name-img,
+.password-img {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    left: 13px;
+}
+
+.user-name-img {
+    background: url(../image/login/user.png);
+}
+
+.user,
+.paw {
+    position: relative;
+}
+
+.password-img {
+    background: url(../image/login/passwd.png);
+}
+
+.split {
+    position: absolute;
+    display: inline-block;
+    width: 1px;
+    height: 25px;
+    background: rgba(156, 58, 58, .23);
+    top: 50%;
+    transform: translateY(-50%);
+    left: 41px;
+}
+
+.middle {
+    display: flex;
+    justify-content: space-between;
+    margin: 0 auto;
+    margin-top: 4%;
+}
+
+.wrapper {
+    width: 66%;
+    margin: 0 auto;
+    position: relative;
+    top: 11%;
+}

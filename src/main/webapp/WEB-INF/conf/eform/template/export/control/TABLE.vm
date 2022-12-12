@@ -1,0 +1,162 @@
+## input控件
+#set($tabPlace = ${t})
+##查找子表model名称
+#set($subExportInfo = '')
+#foreach($key in ${exportInfo.subInfo.keySet()})
+#if("$!{formCell.fieldId}" == "${key}")
+#set($subExportInfo = $exportInfo.subInfo.get("${key}"))
+#break
+#end
+#end
+#set($subModelClassNameParam = ${formTemplateService.lowerCaseFirstChar("${subExportInfo.modelClassName}")})
+${t}<table id="${subModelClassNameParam}Table" class="table table-bordered table-hover">
+${t}	<thead>
+${t}       	<tr>
+#foreach($tableFormCell in ${exportInfo.formCellList})
+#if(${formCell.formcellId} == ${tableFormCell.pFormcellId})
+${t}			<th class="center" style="#if(${tableFormCell.formcellTypecode} == "INPUTHIDDEN")display: none;#end #if("$!{tableFormCell.formcellTableColumnWidth}" != "")width: ${tableFormCell.formcellTableColumnWidth};#end">
+#if(${tableFormCell.formcellRequired} == "true")
+${t}				<i class="ace-icon fa fa-asterisk red smaller-70"></i>
+#end
+#if(${tableFormCell.formcellTypecode} != "INPUTHIDDEN")
+${t}				$!{tableFormCell.formcellDescr}
+#end
+${t}			</th>
+#end
+#end
+#if("$!{formCell.formcellTableHidebtncol}" != "true")
+${t}			<th class="center" style="width: 60px;">
+${t}				<a href="javascript:void(0);" onclick="jdp_eform_addTableRow(this);">
+${t}               		<i class="ace-icon fa fa-plus"></i>
+${t}           		</a>
+${t}			</th>
+#end
+${t}		</tr>
+${t}   	</thead>
+${t}	<tbody>
+${t}		<tr style="display: none;" class="baseRowTr" index="${elParam}{fn:length(${subModelClassNameParam}List) > 0 ? fn:length(${subModelClassNameParam}List) : ${formCell.formcellTableRowInitNum}}">
+#if("$!{subExportInfo.primaryKey}" != "")
+#set($subPrimaryKeyName = ${formTemplateService.underline2Camel("${subExportInfo.primaryKey}", true)})
+${t}			<td style="display: none;">
+${t}				<input type="hidden" id="${subPrimaryKeyName}_index" class="primary"/>
+${t}			</td>
+#end
+#foreach($tableFormCell in ${subExportInfo.formCellList})
+#set($controlFormCell = $tableFormCell)
+#set($showValueAttribute = 'false')
+#set($modelFieldCodeParam = ${formTemplateService.underline2Camel("${tableFormCell.fieldCode}", true)})##
+#set($modelFieldCodeIndex = "_index")
+#set($modelFieldCodeNameParam = "${modelFieldCodeParam}Name")##
+${t}			<td#if(${tableFormCell.formcellTypecode} == "INPUTHIDDEN") style="display: none;"#end>
+#set($t = "${tabPlace}				")
+#parse("control/${tableFormCell.formcellTypecode}.vm")
+
+#set($t = ${tabPlace})
+${t}			</td>
+#end
+#if("$!{formCell.formcellTableHidebtncol}" != "true")
+${t}	     	<td class="center" style="padding: 8px 8px !important;">
+${t}				<a href="javascript:void(0);" onclick="jdp_eform_deleteTableRow(this);" style="text-decoration:none;">
+${t}					<i class="ace-icon fa fa-trash"></i>
+${t}				</a>
+${t}				<a href="javascript:void(0);" onclick="jdp_eform_upTableRow(this);" style="text-decoration:none;">
+${t}					<i class="ace-icon fa fa-arrow-up"></i>
+${t}				</a>
+${t}				<a href="javascript:void(0);" onclick="jdp_eform_downTableRow(this);" style="text-decoration:none;">
+${t}					<i class="ace-icon fa fa-arrow-down"></i>
+${t}				</a>
+${t}			</td>
+#end
+${t}		</tr>
+${t}		<c:choose>
+${t}	  		<c:when test='${elParam}{fn:length(${subModelClassNameParam}List) > 0}'>
+${t}	     		<c:forEach var="item" items='${elParam}{${subModelClassNameParam}List}' varStatus="rowStatus">
+${t}	                <tr index="${elParam}{rowStatus.index}">
+#if("$!{subExportInfo.primaryKey}" != "")
+#set($subPrimaryKeyName = ${formTemplateService.underline2Camel("${subExportInfo.primaryKey}", true)})
+${t}						<td style="display: none;">
+${t}							<input type="hidden" id="${subPrimaryKeyName}_${elParam}{rowStatus.index}" value="${elParam}{item.${subPrimaryKeyName}}" class="primary"/>
+${t}						</td>
+#end
+#foreach($tableFormCell in ${subExportInfo.formCellList})
+#set($controlFormCell = $tableFormCell)
+#set($showValueAttribute = 'true')
+#set($modelFieldCodeParam = ${formTemplateService.underline2Camel("${tableFormCell.fieldCode}", true)})##
+#set($modelFieldCodeIndex = "_${elParam}{rowStatus.index}")
+#set($modelFieldCodeValueParam = "item.${modelFieldCodeParam}")##
+#if("$!{tableFormCell.shownameMetaField}" == "" && $!{formTemplateService.isCodeNameFormCell("${tableFormCell.formcellTypecode}")} == "true" )
+#set($modelFieldCodeNameParam = "${modelFieldCodeParam}Name")##
+#set($modelFieldCodeNameValueParam = "item.${modelFieldCodeParam}Name")##
+#else
+#set($modelFieldCodeNameParam = ${formTemplateService.underline2Camel("${tableFormCell.shownameMetaField.fieldCode}", true)})##
+#set($modelFieldCodeNameValueParam = "item.${modelFieldCodeNameParam}")##
+#end
+${t}						<td#if(${tableFormCell.formcellTypecode} == "INPUTHIDDEN") style="display: none;"#end>
+#set($t = "${tabPlace}							")
+#parse("control/${tableFormCell.formcellTypecode}.vm")
+
+#set($t = ${tabPlace})
+${t}						</td>
+#end
+#if("$!{formCell.formcellTableHidebtncol}" != "true")
+${t}	             		<td class="center" style="padding: 8px 8px !important;">
+${t}							<a href="javascript:void(0);" onclick="jdp_eform_deleteTableRow(this);" style="text-decoration:none;">
+${t}						   		<i class="ace-icon fa fa-trash"></i>
+${t}						   	</a>
+${t}							<a href="javascript:void(0);" onclick="jdp_eform_upTableRow(this);" style="text-decoration:none;">
+${t}								<i class="ace-icon fa fa-arrow-up"></i>
+${t}							</a>
+${t}							<a href="javascript:void(0);" onclick="jdp_eform_downTableRow(this);" style="text-decoration:none;">
+${t}								<i class="ace-icon fa fa-arrow-down"></i>
+${t}							</a>
+${t}						</td>
+#end
+${t}               		</tr>
+${t}           		</c:forEach>
+${t}           	</c:when>
+${t}       		<c:otherwise>
+#set($tableRowInitNumEnd = ${formCell.formcellTableRowInitNum} - 1)
+${t}				<c:forEach begin="0" end="${tableRowInitNumEnd}" step="1" varStatus="rowStatus">
+${t}					<tr index="${elParam}{rowStatus.index}">
+#if("$!{subExportInfo.primaryKey}" != "")
+#set($subPrimaryKeyName = ${formTemplateService.underline2Camel("${subExportInfo.primaryKey}", true)})
+${t}						<td style="display: none;">
+${t}							<input type="hidden" id="${subPrimaryKeyName}_${elParam}{rowStatus.index}" class="primary"/>
+${t}						</td>
+#end
+#foreach($tableFormCell in ${subExportInfo.formCellList})
+#set($controlFormCell = $tableFormCell)
+#set($showValueAttribute = 'false')
+#set($modelFieldCodeParam = ${formTemplateService.underline2Camel("${tableFormCell.fieldCode}", true)})##
+#set($modelFieldCodeIndex = "_${elParam}{rowStatus.index}")
+#if("$!{tableFormCell.shownameMetaField}" == "" && $!{formTemplateService.isCodeNameFormCell("${tableFormCell.formcellTypecode}")} == "true" )
+#set($modelFieldCodeNameParam = "${modelFieldCodeParam}Name")##
+#else
+#set($modelFieldCodeNameParam = ${formTemplateService.underline2Camel("${tableFormCell.shownameMetaField.fieldCode}", true)})##
+#end
+${t}						<td#if(${tableFormCell.formcellTypecode} == "INPUTHIDDEN") style="display: none;"#end>
+#set($t = "${tabPlace}							")
+#parse("control/${tableFormCell.formcellTypecode}.vm")
+
+#set($t = ${tabPlace})
+${t}						</td>
+#end
+#if("$!{formCell.formcellTableHidebtncol}" != "true")
+${t}	         			<td class="center" style="padding: 8px 8px !important;">
+${t}							<a href="javascript:void(0);" onclick="jdp_eform_deleteTableRow(this);" style="text-decoration:none;">
+${t}								<i class="ace-icon fa fa-trash"></i>
+${t}							</a>
+${t}							<a href="javascript:void(0);" onclick="jdp_eform_upTableRow(this);" style="text-decoration:none;">
+${t}								<i class="ace-icon fa fa-arrow-up"></i>
+${t}							</a>
+${t}							<a href="javascript:void(0);" onclick="jdp_eform_downTableRow(this);" style="text-decoration:none;">
+${t}								<i class="ace-icon fa fa-arrow-down"></i>
+${t}							</a>
+${t}						</td>
+#end
+${t}	          		</tr>
+${t}				</c:forEach>
+${t}	      	</c:otherwise>
+${t}	   	</c:choose>
+${t}    </tbody>
+${t}</table>

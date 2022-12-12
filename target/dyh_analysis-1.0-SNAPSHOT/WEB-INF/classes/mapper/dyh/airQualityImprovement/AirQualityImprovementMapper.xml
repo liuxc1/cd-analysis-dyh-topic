@@ -1,0 +1,2063 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="ths.project.api.airQualityImprovement.mapper.AirQualityImprovementMapper">
+    <select id="queryAirQualityImprovementDay"
+            resultType="ths.project.api.airQualityImprovement.entity.AirQualityImprovement">
+        <![CDATA[
+
+
+
+
+
+
+
+
+
+
+                                                                                        SELECT
+                                                                                            MONITORTIME,
+                                                                                            AQI,
+                                                                                            PM2_5 AS PM25,
+                                                                                            PM10,
+                                                                                            SO2,
+                                                                                            NO2,
+                                                                                            CO,
+                                                                                            O3_8 AS O3
+                                                                                        FROM
+                                                                                            TENVAIR.T_ENV_AIRDATA_REGION_DAY
+                                                                                        WHERE
+                                                                                            CODE_REGION = '510100000000'
+                                                                                            AND MONITORTIME >= CONVERT ( datetime, DATEADD(day, -30, (SELECT MAX(MONITORTIME) FROM TENVAIR.T_ENV_AIRDATA_REGION_DAY )), 20 )
+                                                                                            AND MONITORTIME <= CONVERT ( datetime, (SELECT MAX(MONITORTIME) FROM TENVAIR.T_ENV_AIRDATA_REGION_DAY ), 20 )
+
+
+
+
+
+
+
+
+
+
+
+        ]]>
+    </select>
+
+
+    <select id="queryAirQualityImprovementYear"
+            resultType="ths.project.api.airQualityImprovement.entity.AirQualityImprovement">
+        <![CDATA[
+
+
+
+
+
+
+
+
+
+
+
+
+                                                                                                        SELECT
+                                                                                                    A.[YEAR] AS MONITORTIME,
+                                                                                                    A.GOODDAY,
+                                                                                                    A.CONTAMINATIONDAYS AS CONTAMINATIONDAY,
+                                                                                                    A.PM25,
+                                                                                                    A.PM10,
+                                                                                                    A.SO2,
+                                                                                                    A.NO2,
+                                                                                                    B.COMEDIANCONT AS CO,
+                                                                                                    B.O3MEDIANCONT AS O3
+                                                                                                FROM
+                                                                                                    (
+                                                                                                    SELECT SUBSTRING
+                                                                                                        ( ( CONVERT ( VARCHAR ( 100 ), MONITORTIME, 120 ) ), 0, 5 ) AS YEAR,
+                                                                                                        SUM ( CASE WHEN CODE_AQILEVEL < 3 THEN 1 ELSE 0 END ) AS GOODDAY,
+                                                                                                        SUM ( CASE WHEN CODE_AQILEVEL > 4 THEN 1 ELSE 0 END ) AS CONTAMINATIONDAYS,
+                                                                                                        AVG ( PM25 ) AS PM25,
+                                                                                                        AVG ( PM10 ) AS PM10,
+                                                                                                        AVG ( SO2 ) AS SO2,
+                                                                                                        AVG ( NO2 ) AS NO2
+                                                                                                    FROM
+                                                                                                        (
+                                                                                                        SELECT
+                                                                                                            MONITORTIME,
+                                                                                                            CODE_AQILEVEL,
+                                                                                                            PM2_5 AS PM25,
+                                                                                                            PM10,
+                                                                                                            SO2,
+                                                                                                            NO2,
+                                                                                                            CO,
+                                                                                                            O3_8 AS O3
+                                                                                                        FROM
+                                                                                                            TENVAIR.T_ENV_AIRDATA_REGION_DAY
+                                                                                                        WHERE
+                                                                                                            CODE_REGION = '510100000000'
+                                                                                                            AND MONITORTIME >= CONVERT (
+                                                                                                                datetime,
+                                                                                                                DATEADD( YY, - 4, ( CONVERT ( datetime, ( SELECT MAX ( MONITORTIME ) FROM TENVAIR.T_ENV_AIRDATA_REGION_DAY ), 20 ) ) ),
+                                                                                                                20
+                                                                                                            )
+                                                                                                            AND MONITORTIME <= CONVERT ( datetime, ( SELECT MAX ( MONITORTIME ) FROM TENVAIR.T_ENV_AIRDATA_REGION_DAY ), 20 )
+                                                                                                        ) T
+                                                                                                    GROUP BY
+                                                                                                        SUBSTRING ( ( CONVERT ( VARCHAR ( 100 ), MONITORTIME, 120 ) ), 0, 5 )
+                                                                                                    ) A
+                                                                                                    LEFT JOIN (
+                                                                                                    SELECT DISTINCT YEAR
+                                                                                                        ,
+                                                                                                        PERCENTILE_CONT ( 0.9 ) WITHIN GROUP ( ORDER BY CO ) OVER ( PARTITION BY YEAR ) AS COMEDIANCONT,
+                                                                                                        PERCENTILE_CONT ( 0.95 ) WITHIN GROUP ( ORDER BY O3 ) OVER ( PARTITION BY YEAR ) AS O3MEDIANCONT
+                                                                                                    FROM
+                                                                                                        (
+                                                                                                        SELECT SUBSTRING
+                                                                                                            ( ( CONVERT ( VARCHAR ( 100 ), MONITORTIME, 120 ) ), 0, 5 ) AS YEAR,
+                                                                                                            CO,
+                                                                                                            O3
+                                                                                                        FROM
+                                                                                                            (
+                                                                                                            SELECT
+                                                                                                                MONITORTIME,
+                                                                                                                CO,
+                                                                                                                O3_8 AS O3
+                                                                                                            FROM
+                                                                                                                TENVAIR.T_ENV_AIRDATA_REGION_DAY
+                                                                                                            WHERE
+                                                                                                                CODE_REGION = '510100000000'
+                                                                                                                AND MONITORTIME >= CONVERT (
+                                                                                                                    datetime,
+                                                                                                                    DATEADD( YY, - 4, ( CONVERT ( datetime, ( SELECT MAX ( MONITORTIME ) FROM TENVAIR.T_ENV_AIRDATA_REGION_DAY ), 20 ) ) ),
+                                                                                                                    20
+                                                                                                                )
+                                                                                                                AND MONITORTIME <= CONVERT ( datetime, ( SELECT MAX ( MONITORTIME ) FROM TENVAIR.T_ENV_AIRDATA_REGION_DAY ), 20 )
+                                                                                                            ) T
+                                                                                                        GROUP BY
+                                                                                                            SUBSTRING ( ( CONVERT ( VARCHAR ( 100 ), MONITORTIME, 120 ) ), 0, 5 ),
+                                                                                                            CO,
+                                                                                                            O3
+                                                                                                        ) A
+                                                                                                    ) B ON A.[YEAR] = B.[YEAR]
+
+
+
+
+
+
+
+
+
+
+
+
+        ]]>
+    </select>
+
+    <select id="queryAirQualityImprovementMonth"
+            resultType="ths.project.api.airQualityImprovement.entity.AirQualityImprovement">
+        <![CDATA[
+
+
+
+
+
+
+
+
+
+                                                                        SELECT
+                                                                            A.[YEAR] AS MONITORTIME,
+                                                                            A.GOODDAY,
+                                                                            A.CONTAMINATIONDAYS AS CONTAMINATIONDAY,
+                                                                            A.PM25,
+                                                                            A.PM10,
+                                                                            A.SO2,
+                                                                            A.NO2,
+                                                                            B.COMEDIANCONT AS CO,
+                                                                            B.O3MEDIANCONT AS O3
+                                                                        FROM
+                                                                            (
+                                                                            SELECT SUBSTRING
+                                                                                ( ( CONVERT ( VARCHAR ( 100 ), MONITORTIME, 120 ) ), 0, 8 ) AS YEAR,
+                                                                                SUM ( CASE WHEN CODE_AQILEVEL < 3 THEN 1 ELSE 0 END ) AS GOODDAY,
+                                                                                SUM ( CASE WHEN CODE_AQILEVEL > 4 THEN 1 ELSE 0 END ) AS CONTAMINATIONDAYS,
+                                                                                AVG ( PM25 ) AS PM25,
+                                                                                AVG ( PM10 ) AS PM10,
+                                                                                AVG ( SO2 ) AS SO2,
+                                                                                AVG ( NO2 ) AS NO2
+                                                                            FROM
+                                                                                (
+                                                                                SELECT
+                                                                                    MONITORTIME,
+                                                                                    CODE_AQILEVEL,
+                                                                                    PM2_5 AS PM25,
+                                                                                    PM10,
+                                                                                    SO2,
+                                                                                    NO2,
+                                                                                    CO,
+                                                                                    O3_8 AS O3
+                                                                                FROM
+                                                                                    TENVAIR.T_ENV_AIRDATA_REGION_DAY
+                                                                                WHERE
+                                                                                    CODE_REGION = '510100000000'
+                                                                                    AND MONITORTIME >= CONVERT (
+                                                                                        datetime,
+                                                                                        DATEADD( MONTH, - 12, ( CONVERT ( datetime, ( SELECT MAX ( MONITORTIME ) FROM TENVAIR.T_ENV_AIRDATA_REGION_DAY ), 20 ) ) ),
+                                                                                        20
+                                                                                    )
+                                                                                    AND MONITORTIME <= CONVERT ( datetime, ( SELECT MAX ( MONITORTIME ) FROM TENVAIR.T_ENV_AIRDATA_REGION_DAY ), 20 )
+                                                                                ) T
+                                                                            GROUP BY
+                                                                                SUBSTRING ( ( CONVERT ( VARCHAR ( 100 ), MONITORTIME, 120 ) ), 0, 8 )
+                                                                            ) A
+                                                                            LEFT JOIN (
+                                                                            SELECT DISTINCT YEAR
+                                                                                ,
+                                                                                PERCENTILE_CONT ( 0.9 ) WITHIN GROUP ( ORDER BY CO ) OVER ( PARTITION BY YEAR ) AS COMEDIANCONT,
+                                                                                PERCENTILE_CONT ( 0.95 ) WITHIN GROUP ( ORDER BY O3 ) OVER ( PARTITION BY YEAR ) AS O3MEDIANCONT
+                                                                            FROM
+                                                                                (
+                                                                                SELECT SUBSTRING
+                                                                                    ( ( CONVERT ( VARCHAR ( 100 ), MONITORTIME, 120 ) ), 0, 8 ) AS YEAR,
+                                                                                    CO,
+                                                                                    O3
+                                                                                FROM
+                                                                                    (
+                                                                                    SELECT
+                                                                                        MONITORTIME,
+                                                                                        CO,
+                                                                                        O3_8 AS O3
+                                                                                    FROM
+                                                                                        TENVAIR.T_ENV_AIRDATA_REGION_DAY
+                                                                                    WHERE
+                                                                                        CODE_REGION = '510100000000'
+                                                                                        AND MONITORTIME >= CONVERT (
+                                                                                            datetime,
+                                                                                            DATEADD( MONTH, - 12, ( CONVERT ( datetime, ( SELECT MAX ( MONITORTIME ) FROM TENVAIR.T_ENV_AIRDATA_REGION_DAY ), 20 ) ) ),
+                                                                                            20
+                                                                                        )
+                                                                                        AND MONITORTIME <= CONVERT ( datetime, ( SELECT MAX ( MONITORTIME ) FROM TENVAIR.T_ENV_AIRDATA_REGION_DAY ), 20 )
+                                                                                    ) T
+                                                                                GROUP BY
+                                                                                    SUBSTRING ( ( CONVERT ( VARCHAR ( 100 ), MONITORTIME, 120 ) ), 0, 8 ),
+                                                                                    CO,
+                                                                                    O3
+                                                                                ) A
+                                                                            ) B ON A.[YEAR] = B.[YEAR]
+
+
+
+
+
+
+
+
+
+        ]]>
+    </select>
+
+    <select id="queryAirQualityImprovementHour"
+            resultType="ths.project.api.airQualityImprovement.entity.AirQualityImprovementHour">
+        <![CDATA[
+
+
+
+
+
+
+                                                        SELECT
+                                                        MONITORTIME,
+                                                        AQI,
+                                                        PM2_5 AS PM25,
+                                                        PM10,
+                                                        SO2,
+                                                        NO2,
+                                                        CO,
+                                                        O3
+                                                        FROM
+                                                        TENVAIR.T_ENV_AIRDATA_REGION_HOUR
+                                                        WHERE
+                                                        CODE_REGION = '510100000000'
+                                                        AND MONITORTIME >= CONVERT ( datetime, DATEADD( hh, - 24, ( SELECT MAX ( MONITORTIME ) FROM
+                                                        TENVAIR.T_ENV_AIRDATA_REGION_HOUR )), 20 )
+                                                        AND MONITORTIME<= CONVERT ( datetime, ( SELECT MAX ( MONITORTIME ) FROM TENVAIR.T_ENV_AIRDATA_REGION_HOUR ), 20
+                                                        )
+
+
+
+
+
+
+        ]]>
+    </select>
+
+
+    <select id="queryAirQualityImprovementMonthRemark" parameterType="map"
+            resultType="java.util.HashMap">
+
+        <choose>
+            <when test="type == 'co' ">
+                SELECT * FROM (
+                SELECT
+                A.CO - B.CO AS GOOD
+                FROM
+                (
+                SELECT AVG
+                ( CO ) AS CO
+                FROM
+                (
+                SELECT DISTINCT YEAR
+                ,
+                PERCENTILE_CONT ( 0.9 ) WITHIN GROUP ( ORDER BY CO ) OVER ( PARTITION BY YEAR ) AS CO
+                FROM
+                (
+                SELECT SUBSTRING
+                ( ( CONVERT ( VARCHAR ( 100 ), MONITORTIME, 120 ) ), 0, 8 ) AS YEAR,
+                CO
+                FROM
+                (
+                SELECT
+                MONITORTIME,
+                CO,
+                O3_8 AS O3
+                FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY
+                WHERE
+                CODE_REGION = '510100000000'
+                AND MONITORTIME >= CONVERT (
+                datetime,
+                DATEADD( MONTH, - 12, ( CONVERT ( datetime, ( SELECT MAX ( MONITORTIME ) FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY ), 20 ) ) ),
+                20
+                )
+                AND MONITORTIME &lt;= CONVERT ( datetime, ( SELECT MAX ( MONITORTIME ) FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY ), 20 )
+                ) T
+                GROUP BY
+                SUBSTRING ( ( CONVERT ( VARCHAR ( 100 ), MONITORTIME, 120 ) ), 0, 8 ),
+                CO
+                ) A
+                ) A
+                ) A
+                LEFT JOIN (
+                SELECT AVG
+                ( CO ) AS CO
+                FROM
+                (
+                SELECT DISTINCT YEAR
+                ,
+                PERCENTILE_CONT ( 0.9 ) WITHIN GROUP ( ORDER BY CO ) OVER ( PARTITION BY YEAR ) AS CO
+                FROM
+                (
+                SELECT SUBSTRING
+                ( ( CONVERT ( VARCHAR ( 100 ), MONITORTIME, 120 ) ), 0, 8 ) AS YEAR,
+                CO
+                FROM
+                (
+                SELECT
+                MONITORTIME,
+                CO,
+                O3_8 AS O3
+                FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY
+                WHERE
+                CODE_REGION = '510100000000'
+                AND MONITORTIME >= CONVERT (
+                datetime,
+                DATEADD( MONTH, - 24, ( CONVERT ( datetime, ( SELECT MAX ( MONITORTIME ) FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY ), 20 ) ) ),
+                20
+                )
+                AND MONITORTIME &lt;= DATEADD( MONTH, - 12, CONVERT ( datetime, ( SELECT MAX ( MONITORTIME ) FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY ), 20 ) )
+                ) T
+                GROUP BY
+                SUBSTRING ( ( CONVERT ( VARCHAR ( 100 ), MONITORTIME, 120 ) ), 0, 8 ),
+                CO
+                ) A
+                ) A
+                ) B ON 1 =1
+                ) A LEFT JOIN (
+                SELECT
+                A.YEAR AS GOOD_MONTH,
+                B.YEAR AS WORST_MONTH
+                FROM
+                (
+                SELECT TOP
+                1 YEAR
+                FROM
+                (
+                SELECT DISTINCT YEAR
+                ,
+                PERCENTILE_CONT ( 0.9 ) WITHIN GROUP ( ORDER BY CO ) OVER ( PARTITION BY YEAR ) AS CO
+                FROM
+                (
+                SELECT SUBSTRING
+                ( ( CONVERT ( VARCHAR ( 100 ), MONITORTIME, 120 ) ), 0, 8 ) AS YEAR,
+                CO
+                FROM
+                (
+                SELECT
+                MONITORTIME,
+                CO
+                FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY
+                WHERE
+                CODE_REGION = '510100000000'
+                AND MONITORTIME >= CONVERT (
+                datetime,
+                DATEADD( MONTH, - 12, ( CONVERT ( datetime, ( SELECT MAX ( MONITORTIME ) FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY ), 20 ) ) ),
+                20
+                )
+                AND MONITORTIME &lt;= CONVERT ( datetime, ( SELECT MAX ( MONITORTIME ) FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY ), 20 )
+                ) T
+                GROUP BY
+                SUBSTRING ( ( CONVERT ( VARCHAR ( 100 ), MONITORTIME, 120 ) ), 0, 8 ),
+                CO
+                ) A
+                ) A
+                ORDER BY
+                CO DESC
+                ) A
+                LEFT JOIN (
+                SELECT TOP
+                1 YEAR
+                FROM
+                (
+                SELECT DISTINCT YEAR
+                ,
+                PERCENTILE_CONT ( 0.9 ) WITHIN GROUP ( ORDER BY CO ) OVER ( PARTITION BY YEAR ) AS CO
+                FROM
+                (
+                SELECT SUBSTRING
+                ( ( CONVERT ( VARCHAR ( 100 ), MONITORTIME, 120 ) ), 0, 8 ) AS YEAR,
+                CO
+                FROM
+                (
+                SELECT
+                MONITORTIME,
+                CO
+                FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY
+                WHERE
+                CODE_REGION = '510100000000'
+                AND MONITORTIME >= CONVERT (
+                datetime,
+                DATEADD( MONTH, - 12, ( CONVERT ( datetime, ( SELECT MAX ( MONITORTIME ) FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY ), 20 ) ) ),
+                20
+                )
+                AND MONITORTIME &lt;= CONVERT ( datetime, ( SELECT MAX ( MONITORTIME ) FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY ), 20 )
+                ) T
+                GROUP BY
+                SUBSTRING ( ( CONVERT ( VARCHAR ( 100 ), MONITORTIME, 120 ) ), 0, 8 ),
+                CO
+                ) A
+                ) A
+                ORDER BY
+                CO
+                ) B ON 1 =1
+                ) B ON 1=1
+            </when>
+            <when test="type == 'o3' ">
+                SELECT
+                *
+                FROM
+                (
+                SELECT
+                A.O3 - B.O3 AS GOOD
+                FROM
+                (
+                SELECT AVG
+                ( O3 ) AS O3
+                FROM
+                (
+                SELECT DISTINCT YEAR
+                ,
+                PERCENTILE_CONT ( 0.95 ) WITHIN GROUP ( ORDER BY O3 ) OVER ( PARTITION BY YEAR ) AS O3
+                FROM
+                (
+                SELECT SUBSTRING
+                ( ( CONVERT ( VARCHAR ( 100 ), MONITORTIME, 120 ) ), 0, 8 ) AS YEAR,
+                O3
+                FROM
+                (
+                SELECT
+                MONITORTIME,
+                O3_8 AS O3
+                FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY
+                WHERE
+                CODE_REGION = '510100000000'
+                AND MONITORTIME >= CONVERT (
+                datetime,
+                DATEADD( MONTH, - 12, ( CONVERT ( datetime, ( SELECT MAX ( MONITORTIME ) FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY ), 20 ) ) ),
+                20
+                )
+                AND MONITORTIME &lt;= CONVERT ( datetime, ( SELECT MAX ( MONITORTIME ) FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY ), 20 )
+                ) T
+                GROUP BY
+                SUBSTRING ( ( CONVERT ( VARCHAR ( 100 ), MONITORTIME, 120 ) ), 0, 8 ),
+                O3
+                ) A
+                ) A
+                ) A
+                LEFT JOIN (
+                SELECT AVG
+                ( O3 ) AS O3
+                FROM
+                (
+                SELECT DISTINCT YEAR
+                ,
+                PERCENTILE_CONT ( 0.95 ) WITHIN GROUP ( ORDER BY O3 ) OVER ( PARTITION BY YEAR ) AS O3
+                FROM
+                (
+                SELECT SUBSTRING
+                ( ( CONVERT ( VARCHAR ( 100 ), MONITORTIME, 120 ) ), 0, 8 ) AS YEAR,
+                O3
+                FROM
+                (
+                SELECT
+                MONITORTIME,
+                O3_8 AS O3
+                FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY
+                WHERE
+                CODE_REGION = '510100000000'
+                AND MONITORTIME >= CONVERT (
+                datetime,
+                DATEADD( MONTH, - 24, ( CONVERT ( datetime, ( SELECT MAX ( MONITORTIME ) FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY ), 20 ) ) ),
+                20
+                )
+                AND MONITORTIME &lt;= DATEADD( MONTH, - 12, CONVERT ( datetime, ( SELECT MAX ( MONITORTIME ) FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY ), 20 ) )
+                ) T
+                GROUP BY
+                SUBSTRING ( ( CONVERT ( VARCHAR ( 100 ), MONITORTIME, 120 ) ), 0, 8 ),
+                O3
+                ) A
+                ) A
+                ) B ON 1 = 1
+                ) A
+                LEFT JOIN (
+                SELECT
+                A.YEAR AS GOOD_MONTH,
+                B.YEAR AS WORST_MONTH
+                FROM
+                (
+                SELECT TOP
+                1 YEAR
+                FROM
+                (
+                SELECT DISTINCT YEAR
+                ,
+                PERCENTILE_CONT ( 0.95 ) WITHIN GROUP ( ORDER BY O3 ) OVER ( PARTITION BY YEAR ) AS O3
+                FROM
+                (
+                SELECT SUBSTRING
+                ( ( CONVERT ( VARCHAR ( 100 ), MONITORTIME, 120 ) ), 0, 8 ) AS YEAR,
+                O3
+                FROM
+                (
+                SELECT
+                MONITORTIME,
+                O3_8 AS O3
+                FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY
+                WHERE
+                CODE_REGION = '510100000000'
+                AND MONITORTIME >= CONVERT (
+                datetime,
+                DATEADD( MONTH, - 12, ( CONVERT ( datetime, ( SELECT MAX ( MONITORTIME ) FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY ), 20 ) ) ),
+                20
+                )
+                AND MONITORTIME &lt;= CONVERT ( datetime, ( SELECT MAX ( MONITORTIME ) FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY ), 20 )
+                ) T
+                GROUP BY
+                SUBSTRING ( ( CONVERT ( VARCHAR ( 100 ), MONITORTIME, 120 ) ), 0, 8 ),
+                O3
+                ) A
+                ) A
+                ORDER BY
+                O3 DESC
+                ) A
+                LEFT JOIN (
+                SELECT TOP
+                1 YEAR
+                FROM
+                (
+                SELECT DISTINCT YEAR
+                ,
+                PERCENTILE_CONT ( 0.95 ) WITHIN GROUP ( ORDER BY O3 ) OVER ( PARTITION BY YEAR ) AS O3
+                FROM
+                (
+                SELECT SUBSTRING
+                ( ( CONVERT ( VARCHAR ( 100 ), MONITORTIME, 120 ) ), 0, 8 ) AS YEAR,
+                O3
+                FROM
+                (
+                SELECT
+                MONITORTIME,
+                O3_8 AS O3
+                FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY
+                WHERE
+                CODE_REGION = '510100000000'
+                AND MONITORTIME >= CONVERT (
+                datetime,
+                DATEADD( MONTH, - 12, ( CONVERT ( datetime, ( SELECT MAX ( MONITORTIME ) FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY ), 20 ) ) ),
+                20
+                )
+                AND MONITORTIME &lt;= CONVERT ( datetime, ( SELECT MAX ( MONITORTIME ) FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY ), 20 )
+                ) T
+                GROUP BY
+                SUBSTRING ( ( CONVERT ( VARCHAR ( 100 ), MONITORTIME, 120 ) ), 0, 8 ),
+                O3
+                ) A
+                ) A
+                ORDER BY
+                O3
+                ) B ON 1 = 1
+                ) B ON 1 =1
+            </when>
+            <otherwise>
+                SELECT
+                *
+                FROM
+                (
+                SELECT
+                <choose>
+                    <when test="type == 'goodDay' ">
+                        A.GOODDAY- B.GOODDAY AS GOOD
+                    </when>
+                    <when test="type == 'contaminationDay' ">
+                        A.CONTAMINATIONDAYS - B.CONTAMINATIONDAYS AS GOOD
+                    </when>
+                    <when test="type == 'pm25' ">
+                        A.PM25 - B.PM25 AS GOOD
+                    </when>
+                    <when test="type == 'pm10' ">
+                        A.PM10 - B.PM10 AS GOOD
+                    </when>
+                    <when test="type == 'so2' ">
+                        A.SO2 - B.SO2 AS GOOD
+                    </when>
+                    <when test="type == 'no2' ">
+                        A.NO2 - B.NO2 AS GOOD
+                    </when>
+                </choose>
+                FROM
+                (
+                SELECT
+                <choose>
+                    <when test="type == 'goodDay' ">
+                        SUM ( CASE WHEN CODE_AQILEVEL &lt; 3 THEN 1 ELSE 0 END ) AS GOODDAY
+                    </when>
+                    <when test="type == 'contaminationDay' ">
+                        SUM ( CASE WHEN CODE_AQILEVEL > 4 THEN 1 ELSE 0 END ) AS CONTAMINATIONDAYS
+                    </when>
+                    <when test="type == 'pm25' ">
+                        AVG ( PM2_5 ) AS PM25
+                    </when>
+                    <when test="type == 'pm10' ">
+                        AVG ( PM10 ) AS PM10
+                    </when>
+                    <when test="type == 'so2' ">
+                        AVG ( SO2 ) AS SO2
+                    </when>
+                    <when test="type == 'no2' ">
+                        AVG ( NO2 ) AS NO2
+                    </when>
+                </choose>
+
+                FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY
+                WHERE
+                CODE_REGION = '510100000000'
+                AND MONITORTIME >= CONVERT (
+                datetime,
+                DATEADD( MONTH, - 12, ( CONVERT ( datetime, ( SELECT MAX ( MONITORTIME ) FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY
+                ), 20 ) ) ),
+                20
+                )
+                AND MONITORTIME &lt;= CONVERT ( datetime, ( SELECT MAX ( MONITORTIME ) FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY ),
+                20 )
+                ) A
+                LEFT JOIN (
+                SELECT
+                <choose>
+                    <when test="type == 'goodDay' ">
+                        SUM ( CASE WHEN CODE_AQILEVEL &lt; 3 THEN 1 ELSE 0 END ) AS GOODDAY
+                    </when>
+                    <when test="type == 'contaminationDay' ">
+                        SUM ( CASE WHEN CODE_AQILEVEL > 4 THEN 1 ELSE 0 END ) AS CONTAMINATIONDAYS
+                    </when>
+                    <when test="type == 'pm25' ">
+                        AVG ( PM2_5 ) AS PM25
+                    </when>
+                    <when test="type == 'pm10' ">
+                        AVG ( PM10 ) AS PM10
+                    </when>
+                    <when test="type == 'so2' ">
+                        AVG ( SO2 ) AS SO2
+                    </when>
+                    <when test="type == 'no2' ">
+                        AVG ( NO2 ) AS NO2
+                    </when>
+                </choose>
+
+                FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY
+                WHERE
+                CODE_REGION = '510100000000'
+                AND MONITORTIME >= CONVERT (
+                datetime,
+                DATEADD( MONTH, - 24, ( CONVERT ( datetime, ( SELECT MAX ( MONITORTIME ) FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY
+                ), 20 ) ) ),
+                20
+                )
+                AND MONITORTIME &lt;= DATEADD( MONTH, - 12, CONVERT ( datetime, ( SELECT MAX ( MONITORTIME ) FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY ), 20 ) )
+                ) B ON 1 = 1
+                ) A
+                LEFT JOIN (
+                SELECT
+                *
+                FROM
+                (
+                SELECT
+                TOP 1 SUBSTRING ( ( CONVERT ( VARCHAR ( 100 ), MONITORTIME, 120 ) ), 0, 8 ) AS GOOD_MONTH
+
+                FROM
+                (
+                SELECT
+                MONITORTIME,
+                <choose>
+                    <when test="type == 'goodDay' ">
+                        CODE_AQILEVEL
+                    </when>
+                    <when test="type == 'contaminationDay' ">
+                        CODE_AQILEVEL
+                    </when>
+                    <when test="type == 'pm25' ">
+                        AVG ( PM2_5 ) AS PM25
+                    </when>
+                    <when test="type == 'pm10' ">
+                        AVG ( PM10 ) AS PM10
+                    </when>
+                    <when test="type == 'so2' ">
+                        AVG ( SO2 ) AS SO2
+                    </when>
+                    <when test="type == 'no2' ">
+                        AVG ( NO2 ) AS NO2
+                    </when>
+                </choose>
+
+                FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY
+                WHERE
+                CODE_REGION = '510100000000'
+                AND MONITORTIME >= CONVERT (
+                datetime,
+                DATEADD( MONTH, - 12, ( CONVERT ( datetime, ( SELECT MAX ( MONITORTIME ) FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY
+                ), 20 ) ) ),
+                20
+                )
+                AND MONITORTIME &lt;= CONVERT ( datetime, ( SELECT MAX ( MONITORTIME ) FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY ),
+                20 )
+                <choose>
+                    <when test="type == 'pm25' ">
+                        GROUP BY MONITORTIME
+                    </when>
+                    <when test="type == 'pm10' ">
+                        GROUP BY MONITORTIME
+                    </when>
+                    <when test="type == 'so2' ">
+                        GROUP BY MONITORTIME
+                    </when>
+                    <when test="type == 'no2' ">
+                        GROUP BY MONITORTIME
+                    </when>
+                </choose>
+                ) T
+                GROUP BY
+                SUBSTRING ( ( CONVERT ( VARCHAR ( 100 ), MONITORTIME, 120 ) ), 0, 8 )
+                <choose>
+                    <when test="type == 'pm25' ">
+                        ,PM25
+                    </when>
+                    <when test="type == 'pm10' ">
+                        ,PM10
+                    </when>
+                    <when test="type == 'so2' ">
+                        ,SO2
+                    </when>
+                    <when test="type == 'no2' ">
+                        ,NO2
+                    </when>
+                </choose>
+
+                <choose>
+                    <when test="type == 'goodDay' ">
+                        ORDER BY SUM ( CASE WHEN CODE_AQILEVEL &lt; 3 THEN 1 ELSE 0 END ) DESC
+                    </when>
+                    <when test="type == 'contaminationDay' ">
+                        ORDER BY SUM ( CASE WHEN CODE_AQILEVEL > 4 THEN 1 ELSE 0 END ) DESC
+                    </when>
+                    <when test="type == 'pm25' ">
+                        ORDER BY PM25 DESC
+                    </when>
+                    <when test="type == 'pm10' ">
+                        ORDER BY PM10 DESC
+                    </when>
+                    <when test="type == 'so2' ">
+                        ORDER BY SO2 DESC
+                    </when>
+                    <when test="type == 'no2' ">
+                        ORDER BY NO2 DESC
+                    </when>
+                </choose>
+
+                ) A
+                LEFT JOIN (
+                SELECT TOP
+                1 SUBSTRING ( ( CONVERT ( VARCHAR ( 100 ), MONITORTIME, 120 ) ), 0, 8 ) AS WORST_MONTH
+                FROM
+                (
+                SELECT
+                MONITORTIME,
+                <choose>
+                    <when test="type == 'goodDay' ">
+                        CODE_AQILEVEL
+                    </when>
+                    <when test="type == 'contaminationDay' ">
+                        CODE_AQILEVEL
+                    </when>
+                    <when test="type == 'pm25' ">
+                        AVG ( PM2_5 ) AS PM25
+                    </when>
+                    <when test="type == 'pm10' ">
+                        AVG ( PM10 ) AS PM10
+                    </when>
+                    <when test="type == 'so2' ">
+                        AVG ( SO2 ) AS SO2
+                    </when>
+                    <when test="type == 'no2' ">
+                        AVG ( NO2 ) AS NO2
+                    </when>
+                </choose>
+
+                FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY
+                WHERE
+                CODE_REGION = '510100000000'
+                AND MONITORTIME >= CONVERT (
+                datetime,
+                DATEADD( MONTH, - 12, ( CONVERT ( datetime, ( SELECT MAX ( MONITORTIME ) FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY
+                ), 20 ) ) ),
+                20
+                )
+                AND MONITORTIME &lt;= CONVERT ( datetime, ( SELECT MAX ( MONITORTIME ) FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY ),
+                20 )
+                <choose>
+                    <when test="type == 'pm25' ">
+                        GROUP BY MONITORTIME
+                    </when>
+                    <when test="type == 'pm10' ">
+                        GROUP BY MONITORTIME
+                    </when>
+                    <when test="type == 'so2' ">
+                        GROUP BY MONITORTIME
+                    </when>
+                    <when test="type == 'no2' ">
+                        GROUP BY MONITORTIME
+                    </when>
+                </choose>
+                ) T
+                GROUP BY
+                SUBSTRING ( ( CONVERT ( VARCHAR ( 100 ), MONITORTIME, 120 ) ), 0, 8 )
+                <choose>
+                    <when test="type == 'pm25' ">
+                        ,PM25
+                    </when>
+                    <when test="type == 'pm10' ">
+                        ,PM10
+                    </when>
+                    <when test="type == 'so2' ">
+                        ,SO2
+                    </when>
+                    <when test="type == 'no2' ">
+                        ,NO2
+                    </when>
+                </choose>
+
+                <choose>
+                    <when test="type == 'goodDay' ">
+                        ORDER BY SUM ( CASE WHEN CODE_AQILEVEL &lt; 3 THEN 1 ELSE 0 END )
+                    </when>
+                    <when test="type == 'contaminationDay' ">
+                        ORDER BY SUM ( CASE WHEN CODE_AQILEVEL > 4 THEN 1 ELSE 0 END )
+                    </when>
+                    <when test="type == 'pm25' ">
+                        ORDER BY PM25
+                    </when>
+                    <when test="type == 'pm10' ">
+                        ORDER BY PM10
+                    </when>
+                    <when test="type == 'so2' ">
+                        ORDER BY SO2
+                    </when>
+                    <when test="type == 'no2' ">
+                        ORDER BY NO2
+                    </when>
+                </choose>
+
+                ) B ON 1 = 1
+                ) B ON 1 =1
+            </otherwise>
+        </choose>
+
+    </select>
+
+    <select id="queryAirQualityImprovementYearRemark" parameterType="map"
+            resultType="java.util.HashMap">
+
+        <choose>
+            <when test="type == 'co' ">
+                SELECT * FROM (
+                SELECT
+                A.CO - B.CO AS GOOD
+                FROM
+                (
+                SELECT AVG
+                ( CO ) AS CO
+                FROM
+                (
+                SELECT DISTINCT YEAR
+                ,
+                PERCENTILE_CONT ( 0.9 ) WITHIN GROUP ( ORDER BY CO ) OVER ( PARTITION BY YEAR ) AS CO
+                FROM
+                (
+                SELECT SUBSTRING
+                ( ( CONVERT ( VARCHAR ( 100 ), MONITORTIME, 120 ) ), 0, 8 ) AS YEAR,
+                CO
+                FROM
+                (
+                SELECT
+                MONITORTIME,
+                CO,
+                O3_8 AS O3
+                FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY
+                WHERE
+                CODE_REGION = '510100000000'
+                AND MONITORTIME >= CONVERT (
+                datetime,
+                DATEADD( YEAR, - 5, ( CONVERT ( datetime, ( SELECT MAX ( MONITORTIME ) FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY ), 20 ) ) ),
+                20
+                )
+                AND MONITORTIME &lt;= CONVERT ( datetime, ( SELECT MAX ( MONITORTIME ) FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY ), 20 )
+                ) T
+                GROUP BY
+                SUBSTRING ( ( CONVERT ( VARCHAR ( 100 ), MONITORTIME, 120 ) ), 0, 8 ),
+                CO
+                ) A
+                ) A
+                ) A
+                LEFT JOIN (
+                SELECT AVG
+                ( CO ) AS CO
+                FROM
+                (
+                SELECT DISTINCT YEAR
+                ,
+                PERCENTILE_CONT ( 0.9 ) WITHIN GROUP ( ORDER BY CO ) OVER ( PARTITION BY YEAR ) AS CO
+                FROM
+                (
+                SELECT SUBSTRING
+                ( ( CONVERT ( VARCHAR ( 100 ), MONITORTIME, 120 ) ), 0, 8 ) AS YEAR,
+                CO
+                FROM
+                (
+                SELECT
+                MONITORTIME,
+                CO,
+                O3_8 AS O3
+                FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY
+                WHERE
+                CODE_REGION = '510100000000'
+                AND MONITORTIME >= CONVERT (
+                datetime,
+                DATEADD( YEAR, - 10, ( CONVERT ( datetime, ( SELECT MAX ( MONITORTIME ) FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY ), 20 ) ) ),
+                20
+                )
+                AND MONITORTIME &lt;= DATEADD( YEAR, - 5, CONVERT ( datetime, ( SELECT MAX ( MONITORTIME ) FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY ), 20 ) )
+                ) T
+                GROUP BY
+                SUBSTRING ( ( CONVERT ( VARCHAR ( 100 ), MONITORTIME, 120 ) ), 0, 8 ),
+                CO
+                ) A
+                ) A
+                ) B ON 1 =1
+                ) A LEFT JOIN (
+                SELECT
+                A.YEAR AS GOOD_MONTH,
+                B.YEAR AS WORST_MONTH
+                FROM
+                (
+                SELECT TOP
+                1 YEAR
+                FROM
+                (
+                SELECT DISTINCT YEAR
+                ,
+                PERCENTILE_CONT ( 0.9 ) WITHIN GROUP ( ORDER BY CO ) OVER ( PARTITION BY YEAR ) AS CO
+                FROM
+                (
+                SELECT SUBSTRING
+                ( ( CONVERT ( VARCHAR ( 100 ), MONITORTIME, 120 ) ), 0, 8 ) AS YEAR,
+                CO
+                FROM
+                (
+                SELECT
+                MONITORTIME,
+                CO
+                FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY
+                WHERE
+                CODE_REGION = '510100000000'
+                AND MONITORTIME >= CONVERT (
+                datetime,
+                DATEADD( YEAR, - 5, ( CONVERT ( datetime, ( SELECT MAX ( MONITORTIME ) FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY ), 20 ) ) ),
+                20
+                )
+                AND MONITORTIME &lt;= CONVERT ( datetime, ( SELECT MAX ( MONITORTIME ) FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY ), 20 )
+                ) T
+                GROUP BY
+                SUBSTRING ( ( CONVERT ( VARCHAR ( 100 ), MONITORTIME, 120 ) ), 0, 8 ),
+                CO
+                ) A
+                ) A
+                ORDER BY
+                CO DESC
+                ) A
+                LEFT JOIN (
+                SELECT TOP
+                1 YEAR
+                FROM
+                (
+                SELECT DISTINCT YEAR
+                ,
+                PERCENTILE_CONT ( 0.9 ) WITHIN GROUP ( ORDER BY CO ) OVER ( PARTITION BY YEAR ) AS CO
+                FROM
+                (
+                SELECT SUBSTRING
+                ( ( CONVERT ( VARCHAR ( 100 ), MONITORTIME, 120 ) ), 0, 8 ) AS YEAR,
+                CO
+                FROM
+                (
+                SELECT
+                MONITORTIME,
+                CO
+                FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY
+                WHERE
+                CODE_REGION = '510100000000'
+                AND MONITORTIME >= CONVERT (
+                datetime,
+                DATEADD( YEAR, - 5, ( CONVERT ( datetime, ( SELECT MAX ( MONITORTIME ) FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY ), 20 ) ) ),
+                20
+                )
+                AND MONITORTIME &lt;= CONVERT ( datetime, ( SELECT MAX ( MONITORTIME ) FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY ), 20 )
+                ) T
+                GROUP BY
+                SUBSTRING ( ( CONVERT ( VARCHAR ( 100 ), MONITORTIME, 120 ) ), 0, 8 ),
+                CO
+                ) A
+                ) A
+                ORDER BY
+                CO
+                ) B ON 1 =1
+                ) B ON 1=1
+            </when>
+            <when test="type == 'o3' ">
+                SELECT
+                *
+                FROM
+                (
+                SELECT
+                A.O3 - B.O3 AS GOOD
+                FROM
+                (
+                SELECT AVG
+                ( O3 ) AS O3
+                FROM
+                (
+                SELECT DISTINCT YEAR
+                ,
+                PERCENTILE_CONT ( 0.95 ) WITHIN GROUP ( ORDER BY O3 ) OVER ( PARTITION BY YEAR ) AS O3
+                FROM
+                (
+                SELECT SUBSTRING
+                ( ( CONVERT ( VARCHAR ( 100 ), MONITORTIME, 120 ) ), 0, 8 ) AS YEAR,
+                O3
+                FROM
+                (
+                SELECT
+                MONITORTIME,
+                O3_8 AS O3
+                FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY
+                WHERE
+                CODE_REGION = '510100000000'
+                AND MONITORTIME >= CONVERT (
+                datetime,
+                DATEADD( YEAR, - 5, ( CONVERT ( datetime, ( SELECT MAX ( MONITORTIME ) FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY ), 20 ) ) ),
+                20
+                )
+                AND MONITORTIME &lt;= CONVERT ( datetime, ( SELECT MAX ( MONITORTIME ) FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY ), 20 )
+                ) T
+                GROUP BY
+                SUBSTRING ( ( CONVERT ( VARCHAR ( 100 ), MONITORTIME, 120 ) ), 0, 8 ),
+                O3
+                ) A
+                ) A
+                ) A
+                LEFT JOIN (
+                SELECT AVG
+                ( O3 ) AS O3
+                FROM
+                (
+                SELECT DISTINCT YEAR
+                ,
+                PERCENTILE_CONT ( 0.95 ) WITHIN GROUP ( ORDER BY O3 ) OVER ( PARTITION BY YEAR ) AS O3
+                FROM
+                (
+                SELECT SUBSTRING
+                ( ( CONVERT ( VARCHAR ( 100 ), MONITORTIME, 120 ) ), 0, 8 ) AS YEAR,
+                O3
+                FROM
+                (
+                SELECT
+                MONITORTIME,
+                O3_8 AS O3
+                FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY
+                WHERE
+                CODE_REGION = '510100000000'
+                AND MONITORTIME >= CONVERT (
+                datetime,
+                DATEADD( YEAR, - 10, ( CONVERT ( datetime, ( SELECT MAX ( MONITORTIME ) FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY ), 20 ) ) ),
+                20
+                )
+                AND MONITORTIME &lt;= DATEADD( YEAR, - 5, CONVERT ( datetime, ( SELECT MAX ( MONITORTIME ) FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY ), 20 ) )
+                ) T
+                GROUP BY
+                SUBSTRING ( ( CONVERT ( VARCHAR ( 100 ), MONITORTIME, 120 ) ), 0, 8 ),
+                O3
+                ) A
+                ) A
+                ) B ON 1 = 1
+                ) A
+                LEFT JOIN (
+                SELECT
+                A.YEAR AS GOOD_MONTH,
+                B.YEAR AS WORST_MONTH
+                FROM
+                (
+                SELECT TOP
+                1 YEAR
+                FROM
+                (
+                SELECT DISTINCT YEAR
+                ,
+                PERCENTILE_CONT ( 0.95 ) WITHIN GROUP ( ORDER BY O3 ) OVER ( PARTITION BY YEAR ) AS O3
+                FROM
+                (
+                SELECT SUBSTRING
+                ( ( CONVERT ( VARCHAR ( 100 ), MONITORTIME, 120 ) ), 0, 8 ) AS YEAR,
+                O3
+                FROM
+                (
+                SELECT
+                MONITORTIME,
+                O3_8 AS O3
+                FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY
+                WHERE
+                CODE_REGION = '510100000000'
+                AND MONITORTIME >= CONVERT (
+                datetime,
+                DATEADD( YEAR, - 5, ( CONVERT ( datetime, ( SELECT MAX ( MONITORTIME ) FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY ), 20 ) ) ),
+                20
+                )
+                AND MONITORTIME &lt;= CONVERT ( datetime, ( SELECT MAX ( MONITORTIME ) FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY ), 20 )
+                ) T
+                GROUP BY
+                SUBSTRING ( ( CONVERT ( VARCHAR ( 100 ), MONITORTIME, 120 ) ), 0, 8 ),
+                O3
+                ) A
+                ) A
+                ORDER BY
+                O3 DESC
+                ) A
+                LEFT JOIN (
+                SELECT TOP
+                1 YEAR
+                FROM
+                (
+                SELECT DISTINCT YEAR
+                ,
+                PERCENTILE_CONT ( 0.95 ) WITHIN GROUP ( ORDER BY O3 ) OVER ( PARTITION BY YEAR ) AS O3
+                FROM
+                (
+                SELECT SUBSTRING
+                ( ( CONVERT ( VARCHAR ( 100 ), MONITORTIME, 120 ) ), 0, 8 ) AS YEAR,
+                O3
+                FROM
+                (
+                SELECT
+                MONITORTIME,
+                O3_8 AS O3
+                FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY
+                WHERE
+                CODE_REGION = '510100000000'
+                AND MONITORTIME >= CONVERT (
+                datetime,
+                DATEADD( YEAR, - 5, ( CONVERT ( datetime, ( SELECT MAX ( MONITORTIME ) FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY ), 20 ) ) ),
+                20
+                )
+                AND MONITORTIME &lt;= CONVERT ( datetime, ( SELECT MAX ( MONITORTIME ) FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY ), 20 )
+                ) T
+                GROUP BY
+                SUBSTRING ( ( CONVERT ( VARCHAR ( 100 ), MONITORTIME, 120 ) ), 0, 8 ),
+                O3
+                ) A
+                ) A
+                ORDER BY
+                O3
+                ) B ON 1 = 1
+                ) B ON 1 =1
+            </when>
+            <otherwise>
+                SELECT
+                *
+                FROM
+                (
+                SELECT
+                <choose>
+                    <when test="type == 'goodDay' ">
+                        A.GOODDAY- B.GOODDAY AS GOOD
+                    </when>
+                    <when test="type == 'contaminationDay' ">
+                        A.CONTAMINATIONDAYS - B.CONTAMINATIONDAYS AS GOOD
+                    </when>
+                    <when test="type == 'pm25' ">
+                        A.PM25 - B.PM25 AS GOOD
+                    </when>
+                    <when test="type == 'pm10' ">
+                        A.PM10 - B.PM10 AS GOOD
+                    </when>
+                    <when test="type == 'so2' ">
+                        A.SO2 - B.SO2 AS GOOD
+                    </when>
+                    <when test="type == 'no2' ">
+                        A.NO2 - B.NO2 AS GOOD
+                    </when>
+                </choose>
+                FROM
+                (
+                SELECT
+                <choose>
+                    <when test="type == 'goodDay' ">
+                        SUM ( CASE WHEN CODE_AQILEVEL &lt; 3 THEN 1 ELSE 0 END ) AS GOODDAY
+                    </when>
+                    <when test="type == 'contaminationDay' ">
+                        SUM ( CASE WHEN CODE_AQILEVEL > 4 THEN 1 ELSE 0 END ) AS CONTAMINATIONDAYS
+                    </when>
+                    <when test="type == 'pm25' ">
+                        AVG ( PM2_5 ) AS PM25
+                    </when>
+                    <when test="type == 'pm10' ">
+                        AVG ( PM10 ) AS PM10
+                    </when>
+                    <when test="type == 'so2' ">
+                        AVG ( SO2 ) AS SO2
+                    </when>
+                    <when test="type == 'no2' ">
+                        AVG ( NO2 ) AS NO2
+                    </when>
+                </choose>
+
+                FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY
+                WHERE
+                CODE_REGION = '510100000000'
+                AND MONITORTIME >= CONVERT (
+                datetime,
+                DATEADD( YEAR, - 5, ( CONVERT ( datetime, ( SELECT MAX ( MONITORTIME ) FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY
+                ), 20 ) ) ),
+                20
+                )
+                AND MONITORTIME &lt;= CONVERT ( datetime, ( SELECT MAX ( MONITORTIME ) FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY ),
+                20 )
+                ) A
+                LEFT JOIN (
+                SELECT
+                <choose>
+                    <when test="type == 'goodDay' ">
+                        SUM ( CASE WHEN CODE_AQILEVEL &lt; 3 THEN 1 ELSE 0 END ) AS GOODDAY
+                    </when>
+                    <when test="type == 'contaminationDay' ">
+                        SUM ( CASE WHEN CODE_AQILEVEL > 4 THEN 1 ELSE 0 END ) AS CONTAMINATIONDAYS
+                    </when>
+                    <when test="type == 'pm25' ">
+                        AVG ( PM2_5 ) AS PM25
+                    </when>
+                    <when test="type == 'pm10' ">
+                        AVG ( PM10 ) AS PM10
+                    </when>
+                    <when test="type == 'so2' ">
+                        AVG ( SO2 ) AS SO2
+                    </when>
+                    <when test="type == 'no2' ">
+                        AVG ( NO2 ) AS NO2
+                    </when>
+                </choose>
+
+                FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY
+                WHERE
+                CODE_REGION = '510100000000'
+                AND MONITORTIME >= CONVERT (
+                datetime,
+                DATEADD( YEAR, - 10, ( CONVERT ( datetime, ( SELECT MAX ( MONITORTIME ) FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY
+                ), 20 ) ) ),
+                20
+                )
+                AND MONITORTIME &lt;= DATEADD( YEAR, - 5, CONVERT ( datetime, ( SELECT MAX ( MONITORTIME ) FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY ), 20 ) )
+                ) B ON 1 = 1
+                ) A
+                LEFT JOIN (
+                SELECT
+                *
+                FROM
+                (
+                SELECT
+                TOP 1 SUBSTRING ( ( CONVERT ( VARCHAR ( 100 ), MONITORTIME, 120 ) ), 0, 8 ) AS GOOD_MONTH
+
+                FROM
+                (
+                SELECT
+                MONITORTIME,
+                <choose>
+                    <when test="type == 'goodDay' ">
+                        CODE_AQILEVEL
+                    </when>
+                    <when test="type == 'contaminationDay' ">
+                        CODE_AQILEVEL
+                    </when>
+                    <when test="type == 'pm25' ">
+                        AVG ( PM2_5 ) AS PM25
+                    </when>
+                    <when test="type == 'pm10' ">
+                        AVG ( PM10 ) AS PM10
+                    </when>
+                    <when test="type == 'so2' ">
+                        AVG ( SO2 ) AS SO2
+                    </when>
+                    <when test="type == 'no2' ">
+                        AVG ( NO2 ) AS NO2
+                    </when>
+                </choose>
+
+                FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY
+                WHERE
+                CODE_REGION = '510100000000'
+                AND MONITORTIME >= CONVERT (
+                datetime,
+                DATEADD( YEAR, - 5, ( CONVERT ( datetime, ( SELECT MAX ( MONITORTIME ) FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY
+                ), 20 ) ) ),
+                20
+                )
+                AND MONITORTIME &lt;= CONVERT ( datetime, ( SELECT MAX ( MONITORTIME ) FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY ),
+                20 )
+                <choose>
+                    <when test="type == 'pm25' ">
+                        GROUP BY MONITORTIME
+                    </when>
+                    <when test="type == 'pm10' ">
+                        GROUP BY MONITORTIME
+                    </when>
+                    <when test="type == 'so2' ">
+                        GROUP BY MONITORTIME
+                    </when>
+                    <when test="type == 'no2' ">
+                        GROUP BY MONITORTIME
+                    </when>
+                </choose>
+                ) T
+                GROUP BY
+                SUBSTRING ( ( CONVERT ( VARCHAR ( 100 ), MONITORTIME, 120 ) ), 0, 8 )
+                <choose>
+                    <when test="type == 'pm25' ">
+                        ,PM25
+                    </when>
+                    <when test="type == 'pm10' ">
+                        ,PM10
+                    </when>
+                    <when test="type == 'so2' ">
+                        ,SO2
+                    </when>
+                    <when test="type == 'no2' ">
+                        ,NO2
+                    </when>
+                </choose>
+
+                <choose>
+                    <when test="type == 'goodDay' ">
+                        ORDER BY SUM ( CASE WHEN CODE_AQILEVEL &lt; 3 THEN 1 ELSE 0 END ) DESC
+                    </when>
+                    <when test="type == 'contaminationDay' ">
+                        ORDER BY SUM ( CASE WHEN CODE_AQILEVEL > 4 THEN 1 ELSE 0 END ) DESC
+                    </when>
+                    <when test="type == 'pm25' ">
+                        ORDER BY PM25 DESC
+                    </when>
+                    <when test="type == 'pm10' ">
+                        ORDER BY PM10 DESC
+                    </when>
+                    <when test="type == 'so2' ">
+                        ORDER BY SO2 DESC
+                    </when>
+                    <when test="type == 'no2' ">
+                        ORDER BY NO2 DESC
+                    </when>
+                </choose>
+
+                ) A
+                LEFT JOIN (
+                SELECT TOP
+                1 SUBSTRING ( ( CONVERT ( VARCHAR ( 100 ), MONITORTIME, 120 ) ), 0, 8 ) AS WORST_MONTH
+                FROM
+                (
+                SELECT
+                MONITORTIME,
+                <choose>
+                    <when test="type == 'goodDay' ">
+                        CODE_AQILEVEL
+                    </when>
+                    <when test="type == 'contaminationDay' ">
+                        CODE_AQILEVEL
+                    </when>
+                    <when test="type == 'pm25' ">
+                        AVG ( PM2_5 ) AS PM25
+                    </when>
+                    <when test="type == 'pm10' ">
+                        AVG ( PM10 ) AS PM10
+                    </when>
+                    <when test="type == 'so2' ">
+                        AVG ( SO2 ) AS SO2
+                    </when>
+                    <when test="type == 'no2' ">
+                        AVG ( NO2 ) AS NO2
+                    </when>
+                </choose>
+
+                FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY
+                WHERE
+                CODE_REGION = '510100000000'
+                AND MONITORTIME >= CONVERT (
+                datetime,
+                DATEADD( YEAR, - 5, ( CONVERT ( datetime, ( SELECT MAX ( MONITORTIME ) FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY
+                ), 20 ) ) ),
+                20
+                )
+                AND MONITORTIME &lt;= CONVERT ( datetime, ( SELECT MAX ( MONITORTIME ) FROM
+                TENVAIR.T_ENV_AIRDATA_REGION_DAY ),
+                20 )
+                <choose>
+                    <when test="type == 'pm25' ">
+                        GROUP BY MONITORTIME
+                    </when>
+                    <when test="type == 'pm10' ">
+                        GROUP BY MONITORTIME
+                    </when>
+                    <when test="type == 'so2' ">
+                        GROUP BY MONITORTIME
+                    </when>
+                    <when test="type == 'no2' ">
+                        GROUP BY MONITORTIME
+                    </when>
+                </choose>
+                ) T
+                GROUP BY
+                SUBSTRING ( ( CONVERT ( VARCHAR ( 100 ), MONITORTIME, 120 ) ), 0, 8 )
+                <choose>
+                    <when test="type == 'pm25' ">
+                        ,PM25
+                    </when>
+                    <when test="type == 'pm10' ">
+                        ,PM10
+                    </when>
+                    <when test="type == 'so2' ">
+                        ,SO2
+                    </when>
+                    <when test="type == 'no2' ">
+                        ,NO2
+                    </when>
+                </choose>
+
+                <choose>
+                    <when test="type == 'goodDay' ">
+                        ORDER BY SUM ( CASE WHEN CODE_AQILEVEL &lt; 3 THEN 1 ELSE 0 END )
+                    </when>
+                    <when test="type == 'contaminationDay' ">
+                        ORDER BY SUM ( CASE WHEN CODE_AQILEVEL > 4 THEN 1 ELSE 0 END )
+                    </when>
+                    <when test="type == 'pm25' ">
+                        ORDER BY PM25
+                    </when>
+                    <when test="type == 'pm10' ">
+                        ORDER BY PM10
+                    </when>
+                    <when test="type == 'so2' ">
+                        ORDER BY SO2
+                    </when>
+                    <when test="type == 'no2' ">
+                        ORDER BY NO2
+                    </when>
+                </choose>
+
+                ) B ON 1 = 1
+                ) B ON 1 =1
+            </otherwise>
+        </choose>
+
+    </select>
+
+
+    <select id="queryAirQualityImprovementDayRemark" parameterType="map"
+            resultType="java.util.HashMap">
+        SELECT
+        *
+        FROM
+        (
+        SELECT
+        <choose>
+            <when test="type == 'aqi' ">
+                A.AQI - B.AQI AS GOOD
+            </when>
+            <when test="type == 'pm25' ">
+                A.PM25 - B.PM25 AS GOOD
+            </when>
+            <when test="type == 'pm10' ">
+                A.PM10 - B.PM10 AS GOOD
+            </when>
+            <when test="type == 'so2' ">
+                A.SO2 - B.SO2 AS GOOD
+            </when>
+            <when test="type == 'no2' ">
+                A.NO2 - B.NO2 AS GOOD
+            </when>
+            <when test="type == 'co' ">
+                A.CO - B.CO AS GOOD
+            </when>
+            <when test="type == 'o3' ">
+                A.O3 - B.O3 AS GOOD
+            </when>
+        </choose>
+
+
+        FROM
+        (
+        SELECT
+        <choose>
+            <when test="type == 'aqi' ">
+                AVG ( AQI ) AS AQI
+            </when>
+            <when test="type == 'pm25' ">
+                AVG ( PM2_5 ) AS PM25
+            </when>
+            <when test="type == 'pm10' ">
+                AVG(PM10) AS PM10
+            </when>
+            <when test="type == 'so2' ">
+                AVG(SO2) AS SO2
+            </when>
+            <when test="type == 'no2' ">
+                AVG(NO2) AS NO2
+            </when>
+            <when test="type == 'co' ">
+                AVG(CO) AS CO
+            </when>
+            <when test="type == 'o3' ">
+                AVG(O3_8) AS O3
+            </when>
+        </choose>
+
+        FROM
+        TENVAIR.T_ENV_AIRDATA_REGION_DAY
+        WHERE
+        CODE_REGION = '510100000000'
+        AND MONITORTIME >= CONVERT ( datetime, DATEADD( MONTH, - 1, ( SELECT MAX ( MONITORTIME ) FROM
+        TENVAIR.T_ENV_AIRDATA_REGION_DAY ) ), 20 )
+        AND MONITORTIME &lt;= CONVERT ( datetime, ( SELECT MAX ( MONITORTIME ) FROM TENVAIR.T_ENV_AIRDATA_REGION_DAY ),
+        20 )
+        ) A
+        LEFT JOIN (
+        SELECT
+        <choose>
+            <when test="type == 'aqi' ">
+                AVG( AQI ) AS AQI
+            </when>
+            <when test="type == 'pm25' ">
+                AVG ( PM2_5 ) AS PM25
+            </when>
+            <when test="type == 'pm10' ">
+                AVG(PM10) AS PM10
+            </when>
+            <when test="type == 'so2' ">
+                AVG(SO2) AS SO2
+            </when>
+            <when test="type == 'no2' ">
+                AVG(NO2) AS NO2
+            </when>
+            <when test="type == 'co' ">
+                AVG(CO) AS CO
+            </when>
+            <when test="type == 'o3' ">
+                AVG(O3_8) AS O3
+            </when>
+        </choose>
+        FROM
+        TENVAIR.T_ENV_AIRDATA_REGION_DAY
+        WHERE
+        CODE_REGION = '510100000000'
+        AND MONITORTIME >= CONVERT ( datetime, DATEADD( MONTH, - 2, ( SELECT MAX ( MONITORTIME ) FROM
+        TENVAIR.T_ENV_AIRDATA_REGION_DAY ) ), 20 )
+        AND MONITORTIME &lt;= CONVERT ( datetime, DATEADD( MONTH, - 1, ( SELECT MAX ( MONITORTIME ) FROM
+        TENVAIR.T_ENV_AIRDATA_REGION_DAY ) ), 20 )
+        ) B ON 1 = 1
+        ) A
+        LEFT JOIN (
+        SELECT
+        *
+        FROM
+        (
+        SELECT TOP
+        1 CONVERT ( VARCHAR ( 100 ), MONITORTIME, 23 ) AS WORST_MONTH
+        FROM
+        (
+        SELECT
+        MONITORTIME,
+        <choose>
+            <when test="type == 'aqi' ">
+                AQI
+            </when>
+            <when test="type == 'pm25' ">
+                PM2_5 AS PM25
+            </when>
+            <when test="type == 'pm10' ">
+                PM10
+            </when>
+            <when test="type == 'so2' ">
+                SO2
+            </when>
+            <when test="type == 'no2' ">
+                NO2
+            </when>
+            <when test="type == 'co' ">
+                CO
+            </when>
+            <when test="type == 'o3' ">
+                O3_8 AS O3
+            </when>
+        </choose>
+
+        FROM
+        TENVAIR.T_ENV_AIRDATA_REGION_DAY
+        WHERE
+        CODE_REGION = '510100000000'
+        AND MONITORTIME >= CONVERT ( datetime, DATEADD( MONTH, - 1, ( SELECT MAX ( MONITORTIME ) FROM
+        TENVAIR.T_ENV_AIRDATA_REGION_DAY ) ), 20 )
+        AND MONITORTIME &lt;= CONVERT ( datetime, ( SELECT MAX ( MONITORTIME ) FROM TENVAIR.T_ENV_AIRDATA_REGION_DAY ),
+        20 )
+        ) A
+        <choose>
+            <when test="type == 'aqi' ">
+                ORDER BY AQI DESC
+            </when>
+            <when test="type == 'pm25' ">
+                ORDER BY PM25 DESC
+            </when>
+            <when test="type == 'pm10' ">
+                ORDER BY PM10 DESC
+            </when>
+            <when test="type == 'so2' ">
+                ORDER BY SO2 DESC
+            </when>
+            <when test="type == 'no2' ">
+                ORDER BY NO2 DESC
+            </when>
+            <when test="type == 'co' ">
+                ORDER BY CO DESC
+            </when>
+            <when test="type == 'o3' ">
+                ORDER BY  O3 DESC
+            </when>
+        </choose>
+
+        ) A
+        LEFT JOIN (
+        SELECT TOP
+        1 CONVERT ( VARCHAR ( 100 ), MONITORTIME, 23 ) AS GOOD_MONTH
+        FROM
+        (
+        SELECT
+        MONITORTIME,
+        <choose>
+            <when test="type == 'aqi' ">
+                AQI
+            </when>
+            <when test="type == 'pm25' ">
+                PM2_5 AS PM25
+            </when>
+            <when test="type == 'pm10' ">
+                PM10
+            </when>
+            <when test="type == 'so2' ">
+                SO2
+            </when>
+            <when test="type == 'no2' ">
+                NO2
+            </when>
+            <when test="type == 'co' ">
+                CO
+            </when>
+            <when test="type == 'o3' ">
+                O3_8 AS O3
+            </when>
+        </choose>
+
+        FROM
+        TENVAIR.T_ENV_AIRDATA_REGION_DAY
+        WHERE
+        CODE_REGION = '510100000000'
+        AND MONITORTIME >= CONVERT ( datetime, DATEADD( MONTH, - 1, ( SELECT MAX ( MONITORTIME ) FROM
+        TENVAIR.T_ENV_AIRDATA_REGION_DAY ) ), 20 )
+        AND MONITORTIME &lt;= CONVERT ( datetime, ( SELECT MAX ( MONITORTIME ) FROM TENVAIR.T_ENV_AIRDATA_REGION_DAY ),
+        20 )
+        ) A
+        <choose>
+            <when test="type == 'aqi' ">
+                ORDER BY AQI
+            </when>
+            <when test="type == 'pm25' ">
+                ORDER BY PM25
+            </when>
+            <when test="type == 'pm10' ">
+                ORDER BY PM10
+            </when>
+            <when test="type == 'so2' ">
+                ORDER BY SO2
+            </when>
+            <when test="type == 'no2' ">
+                ORDER BY NO2
+            </when>
+            <when test="type == 'co' ">
+                ORDER BY CO
+            </when>
+            <when test="type == 'o3' ">
+                ORDER BY O3
+            </when>
+        </choose>
+        ) B ON 1 = 1
+        ) B ON 1 = 1
+    </select>
+
+
+    <select id="queryAirQualityImprovementHourRemark" parameterType="map"
+            resultType="java.util.HashMap">
+        SELECT
+        *
+        FROM
+        (
+        SELECT
+        <choose>
+            <when test="type == 'aqi' ">
+                A.AQI - B.AQI AS GOOD
+            </when>
+            <when test="type == 'pm25' ">
+                A.PM25 - B.PM25 AS GOOD
+            </when>
+            <when test="type == 'pm10' ">
+                A.PM10 - B.PM10 AS GOOD
+            </when>
+            <when test="type == 'so2' ">
+                A.SO2 - B.SO2 AS GOOD
+            </when>
+            <when test="type == 'no2' ">
+                A.NO2 - B.NO2 AS GOOD
+            </when>
+            <when test="type == 'co' ">
+                A.CO - B.CO AS GOOD
+            </when>
+            <when test="type == 'o3' ">
+                A.O3 - B.O3 AS GOOD
+            </when>
+        </choose>
+
+
+        FROM
+        (
+        SELECT
+        <choose>
+            <when test="type == 'aqi' ">
+                AVG ( AQI ) AS AQI
+            </when>
+            <when test="type == 'pm25' ">
+                AVG ( PM2_5 ) AS PM25
+            </when>
+            <when test="type == 'pm10' ">
+                AVG(PM10) AS PM10
+            </when>
+            <when test="type == 'so2' ">
+                AVG(SO2) AS SO2
+            </when>
+            <when test="type == 'no2' ">
+                AVG(NO2) AS NO2
+            </when>
+            <when test="type == 'co' ">
+                AVG(CO) AS CO
+            </when>
+            <when test="type == 'o3' ">
+                AVG(O3_8) AS O3
+            </when>
+        </choose>
+
+        FROM
+        TENVAIR.T_ENV_AIRDATA_REGION_DAY
+        WHERE
+        CODE_REGION = '510100000000'
+        AND MONITORTIME >= CONVERT ( datetime, DATEADD( HOUR, - 24, ( SELECT MAX ( MONITORTIME ) FROM
+        TENVAIR.T_ENV_AIRDATA_REGION_DAY ) ), 20 )
+        AND MONITORTIME &lt;= CONVERT ( datetime, ( SELECT MAX ( MONITORTIME ) FROM TENVAIR.T_ENV_AIRDATA_REGION_DAY ),
+        20 )
+        ) A
+        LEFT JOIN (
+        SELECT
+        <choose>
+            <when test="type == 'aqi' ">
+                AVG( AQI ) AS AQI
+            </when>
+            <when test="type == 'pm25' ">
+                AVG ( PM2_5 ) AS PM25
+            </when>
+            <when test="type == 'pm10' ">
+                AVG(PM10) AS PM10
+            </when>
+            <when test="type == 'so2' ">
+                AVG(SO2) AS SO2
+            </when>
+            <when test="type == 'no2' ">
+                AVG(NO2) AS NO2
+            </when>
+            <when test="type == 'co' ">
+                AVG(CO) AS CO
+            </when>
+            <when test="type == 'o3' ">
+                AVG(O3_8) AS O3
+            </when>
+        </choose>
+        FROM
+        TENVAIR.T_ENV_AIRDATA_REGION_DAY
+        WHERE
+        CODE_REGION = '510100000000'
+        AND MONITORTIME >= CONVERT ( datetime, DATEADD( HOUR , - 48, ( SELECT MAX ( MONITORTIME ) FROM
+        TENVAIR.T_ENV_AIRDATA_REGION_DAY ) ), 20 )
+        AND MONITORTIME &lt;= CONVERT ( datetime, DATEADD( HOUR , - 24, ( SELECT MAX ( MONITORTIME ) FROM
+        TENVAIR.T_ENV_AIRDATA_REGION_DAY ) ), 20 )
+        ) B ON 1 = 1
+        ) A
+        LEFT JOIN (
+        SELECT
+        *
+        FROM
+        (
+        SELECT TOP
+        1 CONVERT ( VARCHAR ( 100 ), MONITORTIME, 23 ) AS WORST_MONTH
+        FROM
+        (
+        SELECT
+        MONITORTIME,
+        <choose>
+            <when test="type == 'aqi' ">
+                AQI
+            </when>
+            <when test="type == 'pm25' ">
+                PM2_5 AS PM25
+            </when>
+            <when test="type == 'pm10' ">
+                PM10
+            </when>
+            <when test="type == 'so2' ">
+                SO2
+            </when>
+            <when test="type == 'no2' ">
+                NO2
+            </when>
+            <when test="type == 'co' ">
+                CO
+            </when>
+            <when test="type == 'o3' ">
+                O3_8 AS O3
+            </when>
+        </choose>
+
+        FROM
+        TENVAIR.T_ENV_AIRDATA_REGION_DAY
+        WHERE
+        CODE_REGION = '510100000000'
+        AND MONITORTIME >= CONVERT ( datetime, DATEADD( HOUR , - 24, ( SELECT MAX ( MONITORTIME ) FROM
+        TENVAIR.T_ENV_AIRDATA_REGION_DAY ) ), 20 )
+        AND MONITORTIME &lt;= CONVERT ( datetime, ( SELECT MAX ( MONITORTIME ) FROM TENVAIR.T_ENV_AIRDATA_REGION_DAY ),
+        20 )
+        ) A
+        <choose>
+            <when test="type == 'aqi' ">
+                ORDER BY AQI DESC
+            </when>
+            <when test="type == 'pm25' ">
+                ORDER BY PM25 DESC
+            </when>
+            <when test="type == 'pm10' ">
+                ORDER BY PM10 DESC
+            </when>
+            <when test="type == 'so2' ">
+                ORDER BY SO2 DESC
+            </when>
+            <when test="type == 'no2' ">
+                ORDER BY NO2 DESC
+            </when>
+            <when test="type == 'co' ">
+                ORDER BY CO DESC
+            </when>
+            <when test="type == 'o3' ">
+                ORDER BY  O3 DESC
+            </when>
+        </choose>
+
+        ) A
+        LEFT JOIN (
+        SELECT TOP
+        1 CONVERT ( VARCHAR ( 100 ), MONITORTIME, 23 ) AS GOOD_MONTH
+        FROM
+        (
+        SELECT
+        MONITORTIME,
+        <choose>
+            <when test="type == 'aqi' ">
+                AQI
+            </when>
+            <when test="type == 'pm25' ">
+                PM2_5 AS PM25
+            </when>
+            <when test="type == 'pm10' ">
+                PM10
+            </when>
+            <when test="type == 'so2' ">
+                SO2
+            </when>
+            <when test="type == 'no2' ">
+                NO2
+            </when>
+            <when test="type == 'co' ">
+                CO
+            </when>
+            <when test="type == 'o3' ">
+                O3_8 AS O3
+            </when>
+        </choose>
+
+        FROM
+        TENVAIR.T_ENV_AIRDATA_REGION_DAY
+        WHERE
+        CODE_REGION = '510100000000'
+        AND MONITORTIME >= CONVERT ( datetime, DATEADD( HOUR , - 24, ( SELECT MAX ( MONITORTIME ) FROM
+        TENVAIR.T_ENV_AIRDATA_REGION_DAY ) ), 20 )
+        AND MONITORTIME &lt;= CONVERT ( datetime, ( SELECT MAX ( MONITORTIME ) FROM TENVAIR.T_ENV_AIRDATA_REGION_DAY ),
+        20 )
+        ) A
+        <choose>
+            <when test="type == 'aqi' ">
+                ORDER BY AQI
+            </when>
+            <when test="type == 'pm25' ">
+                ORDER BY PM25
+            </when>
+            <when test="type == 'pm10' ">
+                ORDER BY PM10
+            </when>
+            <when test="type == 'so2' ">
+                ORDER BY SO2
+            </when>
+            <when test="type == 'no2' ">
+                ORDER BY NO2
+            </when>
+            <when test="type == 'co' ">
+                ORDER BY CO
+            </when>
+            <when test="type == 'o3' ">
+                ORDER BY O3
+            </when>
+        </choose>
+        ) B ON 1 = 1
+        ) B ON 1 = 1
+    </select>
+</mapper>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+	    <meta charset="UTF-8">
+	    <title>Title</title>
+	    <link rel="stylesheet" href="./assets/css/common/ths-version.css"/>
+	    <script src="./assets/components/jquery/dist/jquery.js"></script>
+	    <script type="text/javascript">
+		    $(window).scroll(function() {
+		        var height = $(document).scrollTop();//滚轮向上滚动与向下滚动的高度
+		        console.log(height);
+		        if(height >= 157){
+		            $('.inner').css({"position":'fixed',"margin-top":'0px'});
+		        }else{
+		            $('.inner').css({"position":'absolute',"margin-top":'157px'});
+		       	}
+		    });
+		    function resizeIframe() {
+		    	$(".contentMain-right").width($(window).width() - 280);
+		    }
+		    window.onresize = resizeIframe;
+		    $(function(){
+		    	resizeIframe();
+		    	
+		    	$("p.innerSpan > span > a").on("click", function(){
+		    		$("p.innerSpan > span > a.active").removeClass("active");
+		    		$(this).addClass("active");
+		    	});
+		    	$("p.innerSpan > span:first > a").click();
+		    });
+	    </script>
+	</head>
+	<body>
+		<div id="main">
+		    <div class="title">
+		        <h1>【综合信息门户】版本记录</h1>
+		        <p>[+]新增 [-]删除 [^]升级 [#]修复</p>
+		    </div>
+		    <div class="content-main">
+		        <!--左边滚动栏-->
+		        <div class="contentMain-left">
+		            <div class="inner">
+		                <div class="innerbox">
+		                    <p class="innerP" style=";overflow: auto">版本记录<br>
+		                        <p class="innerSpan">
+				                    <span><a href="#v4_0_1">v4.0.1 2018-05-11</a></span><br>
+		                		</p>
+		                    </p>
+		                    <div class="rightScroll">
+		                        <span></span>
+		                    </div>
+		                </div>
+		            </div>
+		        </div>
+		        <!--右边内容-->
+		        <div class="contentMain-right">
+		            <div class="rightTitle" id="v4_0_1">
+		                <p class="rightTitleP">v4.0.1<span class="rightTitleTime">2018-05-11</span></p>
+		                <p class="rightContent">
+		                <p>[+] 换肤功能发布，</p>
+		            </div>
+		
+		        </div>
+		    </div>
+		</div>
+	</body>
+</html>

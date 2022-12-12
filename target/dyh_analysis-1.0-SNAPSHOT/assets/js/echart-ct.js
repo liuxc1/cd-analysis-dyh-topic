@@ -1,0 +1,13 @@
+var waterMarkText = '成都市环境保护科学研究院';
+var airMarkText = '大气科研重点实验室';
+var canvas = document.createElement('canvas');
+var ct = canvas.getContext('2d');
+canvas.width = canvas.height = 350;
+ct.textAlign = 'center';
+ct.textbaseline = 'middle';
+ct.globalAlpha = 0.1;
+ct.font = '20px Microsoft Yahei';
+ct.translate(100, 100);
+ct.rotate(-Math.PI / 4);
+ct.fillText(waterMarkText, 0, 0);
+ct.fillText(airMarkText, -30, 30);

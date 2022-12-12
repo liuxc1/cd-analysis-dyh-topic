@@ -1,0 +1,287 @@
+@charset "utf-8";
+
+html {
+    height: 100%;
+}
+
+body {
+    min-height: 100%;
+    /* background-color: rgba(51, 153, 255, 0.2); */
+}
+
+#container {
+    overflow: hidden;
+}
+
+#row1 {
+    position: relative;
+    height: 100%;
+    overflow-y: auto;
+    /* transition: margin 0.6s ease 0s; */
+}
+
+#r1_col1, #r1_col2, #r1_col3 {
+    min-height: 100%;
+    position: relative;
+}
+
+#r1_col2 {
+    height: 100%;
+}
+
+#r1_col3 .w-check-wrap {
+    /* max-width: 230px; */
+}
+
+#r1_col1 {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 200px;
+    border-right: 1px solid rgb(151, 151, 151);
+}
+
+#r1_col3 {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 300px;
+    padding-left: 1px;
+    /* border-left: 1px solid rgb(151, 151, 151); */
+}
+
+#r1_col2 {
+ /*    margin-left: 201px;
+    margin-right: 301px; */
+}
+
+#time_line{
+    width: 100%;
+    height: auto;
+    position: absolute;
+    bottom: 0;
+}
+
+.time_line_wrap {
+    margin: 0 60px 0;
+    background-color: rgba(255, 255, 255, 0.85);
+    height: 10px;
+    border-radius: 4px;
+    padding: 10px 10px 10px 140px;
+    position: relative;
+}
+
+.progress_wrap {
+    display: block;
+    height: 10px;
+    background-color: #cccccc;
+    position: relative;
+}
+
+.progress_tips {
+    background-color: rgba(0, 0, 0, 0.8);
+    display: none;
+    width: 165px;
+    height: 26px;
+    position: absolute;
+    top: -45px;
+    left: -80px;
+    border-radius: 4px;
+    color: #fff;
+    line-height: 26px;
+    text-align: center;
+}
+
+.progress_tips_arrow { 
+    width: 0;
+    height: 0;
+    position: absolute;
+    top: -19px;
+    left: 10px;
+    border-color:  rgba(0, 0, 0, 0.8) transparent transparent transparent ;
+    border-style: solid dashed dashed dashed ;
+    border-width: 7px;
+    display: none;
+}
+
+.progress_wrap:hover .progress_tips,
+.progress_wrap:hover .progress_tips_arrow {
+    display: block;
+}
+
+.progress_text {
+    height: 24px;
+    background-color: rgba(255, 255, 255, 0.8);
+    width: 170px;
+    text-align: center;
+    margin: 0 auto;
+    font-size: 14px;
+    font-weight: 700;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+}
+
+.time_line_progress {
+    display: block;
+    width: 0;
+    height: 10px;
+    background-color: #1b315e;
+}
+
+.time_line_btns {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 120px;
+    height: 30px;
+}
+
+.time_line_btns > .my-btn {
+    margin-top: 2px;
+    float: left;
+    width: 26px;
+    height: 26px;
+    margin-left: 10px;
+    background-size: 26px 26px;
+}
+
+.showPrev {
+    background: url("icons/showPrev.png") no-repeat scroll center;
+}
+
+.showNext {
+    background: url("icons/showNext.png") no-repeat scroll center;
+}
+
+.play {
+    background: url("icons/play.png") no-repeat scroll center;
+}
+
+.play.active {
+    background-image: url("icons/stop.png");
+}
+
+.img_wrap {
+    height: calc(100% - 76px);
+    padding: 6px;
+    text-align: center;
+}
+
+.img_wrap img{
+    width: auto;
+    height: auto;
+}
+
+.btn-col {
+    padding-right: 30px;
+    float: right;
+}
+
+.col_btn_big, .col_btn_small {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    color: #0099e1;
+    z-index: 2;
+}
+.col_btn_small {
+    display: none;
+}
+.full .col_btn_small{
+    display: inline;
+}
+
+.full .col_btn_big{
+    display: none;
+}
+
+#row1.full {
+    /* margin-left: -201px;
+    margin-right: -301px; */
+    
+}
+/**尝试解决IE下切换图片闪屏的问题*/
+.progress_cache {
+    position: absolute;
+    top: -1px;
+    left: -1px;
+    width: 1px;
+    height: 1px;
+    opacity: 0.01;
+    overflow: hidden;
+}
+
+.progress_cache img {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 1px;
+    height: 1px;    
+}
+
+.item_img_list ul {
+    position: relative;
+    display: block;
+    border: 1px solid #d1d1d1;
+    min-height: 30px;
+    max-height: 186px;
+    overflow: auto;
+    margin: 10px;
+    background-color: #fff;
+}
+
+.item_img_list li {
+    border-top: 1px dotted #c8c8c8;
+    color: #555555;
+    height: 30px;
+    cursor: pointer;
+    display: block;
+    font-size: 14px;
+    line-height: 30px;
+    margin: 0;
+    padding: 0 3%;
+    width: 94%;
+}
+
+.item_img_list li:first-child {
+    border-top: medium none;
+}
+
+.item_img_list li.active {
+    background: #f2fdff none repeat scroll 0 0;
+    color: #0099e1;
+}
+
+.goLeft {
+    background-image: url("icons/left.svg");
+    position: absolute;
+    height: 32px;
+    width: 32px;
+    margin-top: -16px;
+    top: 50%;
+    left: 20px;
+    z-index: 2;
+}
+
+.goRight {
+    background-image: url("icons/right.svg");
+    position: absolute;
+    height: 32px;
+    width: 32px;
+    margin-top: -16px;
+    top: 50%;
+    right: 20px;
+    z-index: 2;
+}
+
+.no_play .play_c{
+    display: none;
+}
+
+.no_play .img_wrap {
+    height: calc(100% - 12px);
+}
+
+#row1.full, #r1_col2{
+    margin-left: 0;
+}

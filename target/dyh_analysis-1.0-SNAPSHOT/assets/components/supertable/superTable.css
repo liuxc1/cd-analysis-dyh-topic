@@ -1,0 +1,73 @@
+/*
+///////////////////////////////////////////////////////////////////////////////////////// 
+// Super Tables v0.30 - MIT Style License
+// Copyright (c) 2008 Matt Murphy --- www.matts411.com
+//
+// Contributors:
+// Joe Gallo
+///////////////////////////////////////////////////////////////////////////////////////// 
+*/
+.sBase {
+	position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+/* HEADERS */
+.sHeader {
+	position: absolute;
+	z-index: 3;
+	background-color:#EDF2FC; /*#ffffff  #8bcaf5*/
+}
+.sHeaderInner {
+	position: relative;
+}
+.sHeaderInner table {
+	border-spacing: 0px 0px !important;
+	border-collapse: collapse !important;
+	width: 1px !important;
+	table-layout: fixed !important;
+}
+
+/* HEADERS - FIXED */
+.sFHeader {
+	position: absolute;
+	z-index: 4;
+	overflow: hidden;
+}
+.sFHeader table {
+	border-spacing: 0px 0px !important;
+	border-collapse: collapse !important;
+	width: 1px !important;
+	table-layout: fixed !important;
+}
+
+/* BODY */
+.sData {
+	position: absolute;
+	z-index: 2;
+	overflow: auto;
+	background-color: #FFFFFF;
+}
+.sData table {
+	border-spacing: 0px 0px !important;
+	border-collapse: collapse !important;
+	width: 1px !important; 
+	table-layout: fixed !important;
+}
+
+/* BODY - FIXED */
+.sFData {
+	position: absolute;
+	z-index: 1;
+}
+.sFDataInner {
+	position: relative;
+}
+.sFData table {
+	border-spacing: 0px 0px !important;
+	border-collapse: collapse !important;
+	width: 1px !important;
+	table-layout: fixed !important;
+}

@@ -1,0 +1,391 @@
+<!-- //
+ 	/**
+     一、选择部门(单选,多选请使用treeDeptMuti.html)组件调用说明：
+     1..在父页面声明函数deptSelectCallBack(dept){},点击树节点后，将调用父页面的deptSelectCallBack函数，
+     并将已点击的部门作为dept参数传递过去，
+     dept 格式为 {id: "P00AE4DBCF194B7BB7214ED0ED41E979", name: "海淀区环保局", code: "hdq", orgid: "P00AE4DBCF194B7BB7214ED0ED41E979"}
+      使用示例如下：
+     function deptSelectCallBack(dept){
+        //console.log(dept);
+        var id = dept.id;
+        var name = dept.name;
+        alert(name);
+     }
+     2.在父页面声明函数
+     function closeSelectDeptDialog(){
+           dialog.get("dialog-ID").close().remove();
+     }
+     点击树节点后，将调用父页面closeSelectDeptDialog函数，以关闭Dialog。
+     帮助？mailto:wangml1@internal.ths.com.cn
+     */
+     二、参数说明
+     treeDept.html?orgid=xxxx-UUID
+     则从指定ID为根，列出其下的部门树
+     orgid可不传，不传默认从root下构造树
+    //  -->
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <!--浏览器兼容性设置-->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <meta charset="utf-8"/>
+    <title></title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+
+    <!-- bootstrap & fontawesome -->
+    <link rel="stylesheet" href="../../assets/css/common/bootstrap.css"/>
+    <link rel="stylesheet" href="../../assets/components/font-awesome/css/font-awesome.css"/>
+
+    <!-- page plugin css -->
+    <!--zTree-->
+    <link rel="stylesheet" href="../../assets/components/zTree/css/metroStyle/metroStyle.css"/>
+
+    <!-- ace styles -->
+    <link rel="stylesheet" href="../../assets/css/common/ace.css" class="ace-main-stylesheet" id="main-ace-style"/>
+
+    <!--[if lte IE 9]>
+    <link rel="stylesheet" href="../../assets/css/common/ace-part2.css" class="ace-main-stylesheet"/>
+    <![endif]-->
+    
+
+    <!--[if lte IE 9]>
+    <link rel="stylesheet" href="../../assets/css/common/ace-ie.css"/>
+    <![endif]-->
+
+    <!--THS CSS 插件-->
+    <link rel="stylesheet" href="../../assets/css/common/ths-custom.css"/>
+
+    <!-- 自己写的CSS，请放在这里 -->
+    <style type="text/css">
+        .widget-box{
+            margin: 0px !important;
+            margin-top: -3px !important;
+        }
+        .tab-content {
+            border: none !important;
+        }
+        .widget-box.transparent > .widget-header {
+             border-bottom: 1px solid #C5D0DC !important;
+         }
+        .widget-box.transparent > .widget-header {
+            border-bottom: 1px solid #C5D0DC !important;
+        }
+        .ztree li span.button.chk.radio_false_part {background-position: -47px -5px !important;}
+		.ztree li span.button.chk.radio_false_part_focus {background-position: -47px -26px !important;}
+       @font-face {
+	font-family: 'FontAwesome';
+	src: url('../../assets/components/font-awesome/fonts/fontawesome-webfont.eot?v=4.5.0');
+	src: url('../../assets/components/font-awesome/fonts/fontawesome-webfont.eot?#iefix&v=4.5.0')
+		format('embedded-opentype'),
+		url('../../assets/components/font-awesome/fonts/fontawesome-webfont.woff2?v=4.5.0')
+		format('woff2'),
+		url('../../assets/components/font-awesome/fonts/fontawesome-webfont.woff?v=4.5.0')
+		format('woff'),
+		url('../../assets/components/font-awesome/fonts/fontawesome-webfont.ttf?v=4.5.0')
+		format('truetype'),
+		url('../../assets/components/font-awesome/fonts/fontawesome-webfont.svg?v=4.5.0#fontawesomeregular')
+		format('svg');
+	font-weight: normal;
+	font-style: normal;
+}
+        
+.ztree li span.button.org_ico_open,.ztree li span.button.org_ico_close {
+	
+}
+
+.ztree li span.button.org_ico_open,
+.ztree li span.button.org_ico_close,
+.ztree li span.button.org_ico_docu,
+.ztree li span.button.ico_open,
+.ztree li span.button.ico_close,
+.ztree li span.button.ico_docu
+	{
+	background-image: none !important;
+	*background-image: none !important;
+}
+
+.ztree li span.button:after,.ztree li span.button:after,.ztree li span.button:after
+	{
+	width: 1.25em;
+	margin-top:3px;
+	text-align: center;
+	display: inline-block;
+	font: normal normal normal 14px/1 FontAwesome;
+	font-size: 15px;
+	text-rendering: auto;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+.ztree li span.button.org_ico_open:after,.ztree li span.button.org_ico_close:after,.ztree li span.button.org_ico_docu:after
+	{
+	content: "  \f0e8";
+}
+
+.ztree li span.button.ico_close:after,.ztree li span.button.ico_docu:after
+	{
+	content: "  \f114";
+}
+
+.ztree li span.button.ico_open:after {
+	content: "  \f115";
+}
+    </style>
+
+    <!-- HTML5shiv and Respond.js for IE8 to support HTML5 elements and media queries -->
+
+    <!--[if lte IE 8]>
+    <script src="../../assets/components/html5shiv/dist/html5shiv.min.js"></script>
+    <script src="../../assets/components/respond/dest/respond.min.js"></script>
+    <![endif]-->
+</head>
+
+<body class="no-skin">
+
+<div class="main-container" id="main-container">
+    <div class="main-content">
+        <div class="main-content-inner padding-page-content">
+                <div style="padding-top: 5px">
+                    <div class="col-xs-12  padding5">
+                           <div class="widget-box transparent">
+                               <div class="widget-header">
+                                   <h5 class="widget-title " style="margin-left: 5px">部门树</h5>
+                                   <label class="pos-rel"  style="line-height: 30px;">
+                                       <input type="checkbox" class="ace"   id="cbShowChildOrg"/>
+                                       <span class="lbl grey">子组织</span>
+                                   </label>
+                                   <div class="widget-toolbar no-border">
+									  <button type="button" class="btn btn-xs    btn-xs-ths"
+										  id="btnOK" style="display:none;">
+										  <i class="ace-icon fa fa-check"></i> 确定
+									  </button>
+                                   </div>
+                               </div>
+
+                               <div id="divTreeWidget" class="widget-body" style="margin-right: -1px;overflow: auto">
+                                   <div class="widget-main padding-2">
+                                   <i id="loading" class="ace-icon fa fa-spinner fa-spin orange bigger-200"></i>
+                                       <ul id="treeDept" class="ztree no-padding"></ul>
+                                   </div>
+                               </div>
+                           </div>
+                    </div>
+                </div>
+        </div><!--/.main-content-inner-->
+    </div><!-- /.main-content -->
+</div><!-- /.main-container -->
+
+<!-- basic scripts -->
+
+<!--[if !IE]> -->
+<script src="../../assets/components/jquery/dist/jquery.js"></script>
+<!-- <![endif]-->
+
+<!--[if IE]>
+<script src="../../assets/components/jquery.1x/dist/jquery.js"></script>
+<![endif]-->
+<script type="text/javascript">
+    if ('ontouchstart' in document.documentElement) document.write("<script src='../../assets/components/jquery.mobile.custom/jquery.mobile.custom.js'>" + "<" + "/script>");
+</script>
+<script src="../../assets/components/bootstrap/dist/js/bootstrap.js"></script>
+
+<!-- page specific plugin scripts -->
+<!--zTree-->
+<script src="../../assets/components/zTree/js/jquery.ztree.all.min.js"></script>
+
+<!--ace script-->
+<script src="../../assets/js/ace.js"></script>
+
+<script src="../../assets/js/ths-util.js"></script>
+
+<!-- config script 请项目组注意修改里面的配置-->
+<script src="config.js"></script>
+
+<!-- 自己写的JS，请放在这里 -->
+<script type="text/javascript">
+		var callbackIframe = ths.getUrlParam("callbackIframe");
+		var callBackWindow;
+		if(callbackIframe){
+			callBackWindow = findCallbackIframe(callbackIframe,window.parent.document);
+		}
+		if(!callBackWindow){
+			callBackWindow = window.parent;
+		}
+		var selectDept="";
+		var zTreeObj;
+		var serverNodeArray=[];//服务器端返回的节点数组
+		// zTree 的参数配置，深入使用请参考 API 文档（setting 配置详解）
+		var setting = {
+			data: {
+				simpleData: {
+					enable: true
+				}
+			},
+			check: { //表示tree的节点在点击时的相关设置
+	            enable: true, //是否显示radio/checkbox
+	            autoCheckTrigger: false,
+	            chkStyle: "radio",//值为checkbox或者radio表示
+	            radioType:"all",
+	            chkboxType: {"Y": "", "N": ""}//表示父子节点的联动效果，不联动
+	        }
+		};
+		var url = config.ou_server_url + "/ouapi/ou/dept/tree.json";
+		var orgid  = config.root_ou_id;//当前登录人所属组织ID，默认为根组织ID,
+		if(p = ths.getUrlParam("orgid"))//如果传递了URL orgid参数，则从指定组织取树
+		{
+			orgid = p;
+		}
+		var showChildOrg = false;//是否显示子组织
+		//自定义回调方法-OK操作
+		var callbackFun = ths.getUrlParam("callback");
+		//自定义回调方法-关闭操作
+		var closeCallbackFun = ths.getUrlParam("closeCallback");
+		//是否显示单选框
+		var showRadio =ths.getUrlParam("showRadio");
+		//父页面隐藏域id
+		var hiddenId=ths.getUrlParam("hiddenId");
+		if(hiddenId){
+			selectDept=$("#"+hiddenId, callBackWindow.document).val().trim();
+		}
+		if(showRadio=="1"){
+			setting.check={
+				enable: true,
+				chkStyle: "radio",
+				radioType:"all"
+			};
+			$("#btnOK").css("display","block");
+		}
+		//Ajax 请求tree
+		function loadTreeAjax()
+		{
+			$("#treeDept").hide();
+			$("#loading").show();
+			 $.ajax( {  
+			        url:url + '?orgid=' + orgid,
+			        type:'get',  
+			        cache:false,  
+			        dataType:'jsonp',  
+			        success:function(data) { 
+			        	serverNodeArray = data.mapList;
+			        	renderTreeAdapter();
+			         },  
+			         error : function(msg) {  
+			        	 console.log(msg);
+			         }  
+			    });
+		}
+		//绘制tree
+		function renderTreeAdapter()
+		{
+				var zNodes =[];var j  = 0;
+				for(var i = 0 ; i<serverNodeArray.length;i++)
+				{
+					if(!showChildOrg && serverNodeArray[i].ORG_ID != orgid)
+					{
+						continue;
+					}
+					var node = {};
+					node.id = serverNodeArray[i].DEPT_ID;
+					node.code = serverNodeArray[i].DEPT_CODE;
+					node.pId = serverNodeArray[i].PARENT != undefined?serverNodeArray[i].PARENT:"";
+					node.name = serverNodeArray[i].DEPT_NAME;
+					node.iconSkin = serverNodeArray[i].DEPT_TYPE == "1"?"org":"";
+					node.id == orgid?node.open = true: node.open =false;
+					if(node.id==selectDept || node.code==selectDept){
+						node.checked = true;
+					}
+					node.click= "redirect('" + node.id + "','" + node.name + "','" + serverNodeArray[i].DEPT_CODE + "','" +serverNodeArray[i].ORG_ID + "');";
+					zNodes[j++] =node;
+				}
+				console.log(zNodes);
+				//if(zTreeObj) zTreeObj.destroy();
+				zTreeObj = $.fn.zTree.init($("#treeDept"), setting, zNodes);
+				$("#treeDept").show();
+				$("#loading").hide();
+		}
+		
+		function redirect(_deptid,_deptname,_deptcode,_deptorgid)
+		{
+			var dept ={};
+			dept.id = _deptid;dept.name = _deptname;dept.code = _deptcode,dept.orgid = _deptorgid;
+			console.log(dept);
+			
+			if(parentExistsFun(callbackFun) == true){ //存在自定义回调方法，进行调用
+	    		eval("callBackWindow." + callbackFun + "(" + JSON.stringify(dept) + ")");
+	    	}else if(callBackWindow && callBackWindow.deptSelectCallBack)
+			{
+				callBackWindow.deptSelectCallBack(dept);
+			}
+			if(parentExistsFun(closeCallbackFun) == true){ //存在自定义回调方法，进行调用
+	    		eval("window.parent." + closeCallbackFun + "()");
+	    	}else if(window.parent && window.parent.closeSelectDeptDialog)
+			{
+				window.parent.closeSelectDeptDialog();
+			}
+		}
+		
+		//判断父页面是否存在方法
+		function parentExistsFun(funName){
+			if(funName == null || funName == ""){
+				return false;
+			}
+			var existsFun = false;
+			try{
+	    		eval("callBackWindow." + funName);
+	    		existsFun = true;
+	    	}catch(err) {}
+	    	return existsFun;
+		}
+		function findCallbackIframe(_frameName,_document){
+			if($("iframe:visible",_document).length>0){
+				for(var i = 0;i<$("iframe:visible",_document).length;i++){
+					var _this = $("iframe:visible",_document)[i];
+					var _name = $(_this).attr("name");
+					if(_name == _frameName){
+						return _this.contentWindow;
+					}else if($("iframe:visible",_this.contentWindow.document).length>0){
+						return findCallbackIframe(_frameName,_this.contentWindow.document);
+					}
+				}
+			}else{
+				return null;
+			}
+		}
+		jQuery(function ($) {
+			showChildOrg = $("#cbShowChildOrg")[0].checked;
+		    $("#cbShowChildOrg").on(ace.click_event,function(){
+		    		showChildOrg = $("#cbShowChildOrg")[0].checked;
+		    		renderTreeAdapter();
+		    });
+		    $("#btnOK").on(ace.click_event,function(){
+		    	var nodes = zTreeObj.transformToArray(zTreeObj.getNodes());
+		    	var dept={};
+		    	$.each(nodes,function(){
+		    		if(this.checked)
+		    		{
+		    			dept=this;
+		    		} 
+		    	});
+		    	if(parentExistsFun(callbackFun) == true){ //存在自定义回调方法，进行调用
+		    		eval("callBackWindow." + callbackFun + "(" + JSON.stringify(dept) + ")");
+		    	}else if(callBackWindow && callBackWindow.deptSelectCallBack)
+				{
+					callBackWindow.deptSelectCallBack(dept);
+				}
+				if(parentExistsFun(closeCallbackFun) == true){ //存在自定义回调方法，进行调用
+		    		eval("window.parent." + closeCallbackFun + "()");
+		    	}else if(window.parent && window.parent.closeSelectDeptDialog)
+				{
+					window.parent.closeSelectDeptDialog();
+				}
+		    });
+		    $("#refreshTree").on(ace.click_event,function(){
+		    	 loadTreeAjax();
+		    });
+		    //加载Tree
+		    loadTreeAjax();
+		});
+</script>
+</body>
+</html>

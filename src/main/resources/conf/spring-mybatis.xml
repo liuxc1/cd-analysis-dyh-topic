@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xmlns="http://www.springframework.org/schema/beans"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+	http://www.springframework.org/schema/tx
+	http://www.springframework.org/schema/tx/spring-tx.xsd
+    http://www.springframework.org/schema/util
+	http://www.springframework.org/schema/util/spring-util.xsd">
+
+    <tx:annotation-driven transaction-manager="transactionManager"/>
+
+    <bean id="vendorProperties" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+        <property name="properties">
+            <props>
+                <prop key="SQL Server">sqlserver</prop>
+                <prop key="DB2">db2</prop>
+                <prop key="Oracle">oracle</prop>
+                <prop key="MySQL">mysql</prop>
+                <prop key="DM DBMS">oracle</prop>
+                <prop key="PostgreSQL">postgresql</prop>
+                <prop key="highgo">postgresql</prop>
+            </props>
+        </property>
+    </bean>
+
+    <bean id="databaseIdProvider" class="org.apache.ibatis.mapping.VendorDatabaseIdProvider">
+        <property name="properties" ref="vendorProperties"/>
+    </bean>
+
+    <bean id="sqlSessionFactory" class="com.baomidou.mybatisplus.extension.spring.MybatisSqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+        <property name="databaseIdProvider" ref="databaseIdProvider"/>
+        <property name="configLocation" value="classpath:conf/mybatis-config.xml"/>
+        <property name="typeAliasesPackage" value="ths.project.**.entity"/>
+        <property name="mapperLocations">
+            <array>
+                <value>classpath:core_mapper/*.xml</value>
+                <value>classpath:portal_mapper/*.xml</value>
+                <value>classpath:ou_mapper/*.xml</value>
+                <value>classpath:eform_mapper/**/*.xml</value>
+                <value>classpath:bpm_mapper/*.xml</value>
+                <value>classpath:mapper/**/*.xml</value>
+                <value>classpath:component_mapper/**/*.xml</value>
+            </array>
+        </property>
+        <property name="plugins">
+            <array>
+                <bean class="com.github.pagehelper.PageInterceptor">
+                    <property name="properties">
+                        <value>
+                            reasonable=true
+                             autoDialect=true
+							 autoRuntimeDialect=true
+                        </value>
+                    </property>
+                </bean>
+                <!-- （必须写在pageHelper以下）postgresql数据库查询时，默认小写key转大写，如果key中包含大写字母将不进行转换。 -->
+                <bean class="ths.jdp.core.extend.mybatis.Interceptor.PgsqlQueryHandler"/>
+            </array>
+        </property>
+        <!-- MP 全局配置注入 -->
+        <property name="globalConfig">
+            <bean class="com.baomidou.mybatisplus.core.config.GlobalConfig">
+                <!-- MP全局数据库策略 -->
+                <property name="dbConfig">
+                    <bean class="com.baomidou.mybatisplus.core.config.GlobalConfig.DbConfig">
+                        <!-- 全局ID类型： 0"数据库ID自增", 1"不设置", 2"自定义策略", 3"唯一workId", 4"UUID", 5"唯一workId字符串" -->
+                        <property name="idType">
+                            <util:constant static-field="com.baomidou.mybatisplus.annotation.IdType.NONE"/>
+                        </property>
+                        <!-- 字段是否默认大写 -->
+                        <property name="capitalMode" value="true"/>
+                        <!-- 逻辑删除定义 -->
+                        <property name="logicDeleteValue" value="1"/>
+                        <property name="logicNotDeleteValue" value="0"/>
+                        <property name="whereStrategy">
+                            <util:constant static-field="com.baomidou.mybatisplus.annotation.FieldStrategy.NOT_EMPTY"/>
+                        </property>
+                    </bean>
+                </property>
+            </bean>
+        </property>
+    </bean>
+
+    <!-- DAO接口所在包名，Spring会自动查找其下的类 -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="ths.**.dao,ths.**.mapper"/>
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+    </bean>
+
+    <bean id="sqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
+        <constructor-arg index="0" ref="sqlSessionFactory"/>
+    </bean>
+
+    <!-- MyBatis XML热加载 -->
+    <bean class="ths.project.common.watch.MybatisMapperWatch">
+        <property name="sqlSessionFactory" ref="sqlSessionFactory"/>
+        <!-- 扫描Mapper文件的资源路径 -->
+        <property name="mapperLocations">
+            <array>
+                <value>classpath:mapper/**/*.xml</value>
+            </array>
+        </property>
+        <!-- 延迟启动刷新程序的秒数: 默认0,无延迟 -->
+        <property name="delaySeconds" value="10"/>
+        <!-- 刷新扫描间隔的时长秒数: 默认30 -->
+        <property name="sleepSeconds" value="10"/>
+    </bean>
+</beans>

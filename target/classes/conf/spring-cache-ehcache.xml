@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns="http://www.springframework.org/schema/beans"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!-- cacheManagerFactory为由Spring生成的ehcache的cacheManager -->
+    <bean id="cacheManagerFactory" class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean">
+        <property name="configLocation" value="classpath:conf/ehcache.xml"/>
+    </bean>
+
+    <!--Spring的cacheManager使用Ehcache的cacheManager -->
+    <bean id="cacheManager" class="org.springframework.cache.ehcache.EhCacheCacheManager">
+        <property name="cacheManager" ref="cacheManagerFactory"/>
+    </bean>
+
+    <!-- 过期的用法，不要调用。为兼容老项目，此Bean的配置保留 开始 -->
+    <bean id="jdpCache" class="org.springframework.cache.ehcache.EhCacheFactoryBean">
+        <property name="cacheName" value="${jdp.default.cache}"/>
+        <property name="cacheManager" ref="cacheManagerFactory"/>
+    </bean>
+    <!-- 过期的用法，不要调用。为兼容老项目，此Bean的配置保留  结束 -->
+</beans>

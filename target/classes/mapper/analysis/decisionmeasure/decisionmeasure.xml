@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="ths.project.analysis.decisionmeasure.mapper.DecisionMeasureMapper">
+
+    <select id="getReportInfoByAscriptionType" resultType="java.util.Map">
+		SELECT TOP 1
+			REPORT_ID,
+			REPORT_NAME,
+			ASCRIPTION_TYPE,
+			REPORT_TIP,
+		    CONVERT(VARCHAR(10),REPORT_TIME,23) REPORT_TIME,
+		    A.CREATE_USER,
+		    B.*
+		FROM
+			DBO.T_ANS_GENERAL_REPORT A
+		LEFT JOIN DBO.T_WARN_CONTROL_INFO B ON A.REPORT_ID=B.WARN_CONTROL_ID
+		WHERE A.DELETE_FLAG=0
+			AND A.ASCRIPTION_TYPE=#{ascriptionType}
+			<if test="reportId != null and reportId!=''">
+				AND REPORT_ID=#{reportId}
+			</if>
+		ORDER BY  REPORT_TIME DESC,CREATE_TIME DESC
+	</select>
+	<!--最新时间-->
+	<select id="getNewestDate" resultType="java.util.Map">
+		SELECT
+			CONVERT(VARCHAR(10),getdate(),23) AS endTime,
+			CASE WHEN MAX(REPORT_TIME) IS NULL THEN DATENAME(year,getdate())+'-01-01'
+			ELSE CONVERT(VARCHAR(10),dateadd(year, datediff(year, 0, dateadd(mm,0,MAX(REPORT_TIME))), 0),23)
+			END AS startTime
+		FROM
+			DBO.T_ANS_GENERAL_REPORT
+		WHERE
+			ASCRIPTION_TYPE=#{ascriptionType}
+		  AND DELETE_FLAG='0'
+	</select>
+    <select id="queryReportList" resultType="ths.project.analysis.decisionmeasure.vo.WarnControlVo">
+		SELECT
+		A.REPORT_ID,
+		A.REPORT_NAME,
+		A.ASCRIPTION_TYPE,
+		A.REPORT_TIP,
+		A.REPORT_TIME,
+		A.CREATE_TIME,
+		A.CREATE_USER,
+		B.WARN_CONTROL_ID,
+		B.CONTROL_NAME,
+	  	B.WARN_START_TIME,
+	   	B.WARN_END_TIME,
+	   	B.PUSH_DATE,
+	   	B.FILE_NAME,
+	   	B.FILE_ID,
+	   	B.WARN_LEVEL,
+	   	B.WARN_LEVEL_NAME,
+	   	B.POLLUTE,
+	   	B.IS_WARM_CONTROL,
+	   	B.STATE
+		FROM
+		DBO.T_ANS_GENERAL_REPORT A
+		LEFT JOIN DBO.T_WARN_CONTROL_INFO B ON A.REPORT_ID=B.WARN_CONTROL_ID
+		WHERE
+		ASCRIPTION_TYPE=#{ascriptionType}
+		AND A.DELETE_FLAG='0'
+		<if test="reportId != null and reportId!=''">
+			AND REPORT_ID=#{reportId}
+		</if>
+		<if test="startTime != null and startTime!=''">
+			AND REPORT_TIME>=CONVERT(DATETIME,#{startTime},120)
+		</if>
+		<if test="endTime != null and endTime!=''">
+			<![CDATA[AND REPORT_TIME<=CONVERT(DATETIME,#{endTime},120)
+		]]></if>
+		ORDER BY  A.REPORT_TIME DESC,A.CREATE_TIME DESC
+	</select>
+</mapper>
+

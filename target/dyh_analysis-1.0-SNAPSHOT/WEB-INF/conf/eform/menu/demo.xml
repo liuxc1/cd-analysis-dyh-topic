@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <param>
+    	<replace format="request" name="companyid" place="companyid"><![CDATA[]]></replace>
+    	<replace format="request" name="id" place="id"><![CDATA[]]></replace>
+    	<replace format="request" name="belongsdate" place="belongsdate"><![CDATA[]]></replace>
+    	<replace format="request" name="intact" place="intact"><![CDATA[]]></replace>
+    	<replace format="request" name="groupName" place="groupName"><![CDATA[测试节点]]></replace>
+        <replace format="sql"     datasource=""><![CDATA[select pro_name  from t_pro_info]]></replace>
+  </param>
+  <topbar isShow="true" default="测试自定义菜单" style="" url=""></topbar>
+  <casecard>
+  	  <card  key="group9"  name="流程信息" cardType="group"  bgImage="fa-windows">
+	    <card  key="group91"  name="{groupName}" cardType="group" bgImage="fa-indent">
+	    	<card  key="card91" name="办理过程" url="./formMul.vm?enterid={companyid}" bgImage=""></card>
+	    	<card  key="card92" name="办理流程" url="./formMul.vm" bgImage=""></card>
+	    </card>
+	  </card>
+  	  <card  key="group1"  name="立案阶段" cardType="group" bgImage="fa-list-ol" left="5">
+  	  	  <card  key="card1" name="立案审批表" cardType="tab">
+  	  	  	<card  key="tab1" name="立案审批表"  url="./list-simple.vm" tabImage="fa-calculator"></card>
+		  	<card  key="tab2" name="附件材料(案件相关附件在此上传)" url="./formMul.vm" tabImage="fa-calendar-o"></card>
+  	  	  </card>
+	  </card>
+	  <card  key="group2"  name="审批阶段" cardType="group" bgImage="fa-strikethrough" left="5">
+		  <card  key="card21"  name="环境保护行政处罚立案调查报告表" url="./formMul.vm"></card>
+		  <card  key="card22"  name="行政处罚事先告知书" click="sendMessage('xxx=111&amp;bbb=222');"></card>
+		  <card  key="card23"  name="行政处罚事先听证告知书" url="./formMul.vm"></card>
+		  <card  key="card24"  name="责令改正违法行为决定书" url="./formMul.vm"></card>
+		  <card  key="card25"  name="送达回证" url="./formMul.vm"></card>
+		  <card  key="card26"  name="听证通知书" url="./formMul.vm"></card>
+	  </card>
+	  <card  key="group5"  name="移送" cardType="group" bgImage="fa-file-text-o" left="5">
+		  <card  key="card51" name="移送审查表" url="./formMul.vm"></card>
+		  <card  key="card52" name="移送函" url="./formMul.vm"></card>
+	  </card>
+	  <card  key="group3"  name="决定" cardType="group" bgImage="fa-th-large" left="5">
+		  <card  key="card31" name="案件呈批表" url="./formMul.vm"></card>
+		  <card  key="card32" name="行政处罚决定书" url="./formMul.vm"></card>
+		  <card  key="card33" name="重大处罚集体讨论记录" url="./formMul.vm"></card>
+		  <card  key="card34" name="送达回证" url="./formMul.vm"></card>
+		  <card  key="card38" name="强制催告申请" url="./formMul.vm"></card>
+		  <card  key="card35" name="强制催告书" url="./formMul.vm"></card>
+		  <card  key="card36" name="执行情况" url="./formMul.vm"></card>
+		  <card  key="card37" name="整改情况复查意见书" url="./formMul.vm"></card>
+	  </card>
+	  <card  key="group4"  name="结案" cardType="group" bgImage="fa-qrcode" left="5">
+	  	<card  key="card41" name="结案审批表" url="./formMul.vm"></card>
+	  </card>
+	  <card  key="group6"  name="销案阶段" cardType="group" bgImage="fa-book" left="5">
+	  	<card  key="card61" name="销案审批表" url="./formMul.vm"></card>
+	  </card>
+  </casecard>
+  <nodecard>
+      <node  key="33" descr="立案登记"  	show="group9,group91,card91,card92,group1,card1,card2,group2" 
+			      						edit="tab1,card91" 
+			      						open="group1,group9"
+			      						define="card92" 
+			      						></node>
+			      						
+	  <node  key="111" descr="111"  	show="group1,card1,card2,group2" 
+			      						edit="tab1,card91" 
+			      						open="group1,group9"
+			      						define="card92" 
+			      						></node>
+			      						
+      <node  key="12" descr="科长审核"    	show="group1,card1,card2" 
+      						edit="group1,card2" 
+      						define="card1" 
+      						></node>
+      <node  key="30" descr="主管局长审核"   	show="group1,card1,card2" 
+      						edit="group1,card2" 
+      						define="card1" 
+      						></node>
+      
+      						
+	  <node  key="6"  	descr="调查取证"	show="group1,card1,card2,group2,card21" 
+	  						edit="group1,card2,group2,card21" 
+	  						define="card21" 
+	  						 ></node>
+	 <node  key="16"  	descr="科长审核"	show="group1,card1,card2,group2,card21" 
+	  						edit="group1,card2" 
+	  						define="card21"
+	  						 ></node>
+	   
+	  	<node  key="21"  	descr="草拟行政处罚告知书"	show="group1,card1,card2,group2,card21,card22,card23,card24" 
+	  						edit="group1,card2,group2,card22,card23,card24" 
+	  						define="card1" 
+	  						 ></node>
+	  	<node  key="25"  	descr="法宣科科长审核"	show="group1,card1,card2,group2,card21,card22,card23,card24" 
+	  						edit="group1,card2" 
+	  						define="card1" 
+	  						></node>
+	  	<node  key="31"  	descr="下达告知"	show="group1,card1,card2,group2,card21,card22,card23,card24,card25" 
+	  						edit="group1,card2,group2,card25" 
+	  						define="card25" 
+	  						 ></node>
+	  						 
+	  	<node  key="11"  	descr="听证"	show="group1,card1,card2,group2,card21,card22,card23,card24,card25,card26" 
+	  						edit="group1,card2,group2,card26" 
+	  						define="card26" 
+	  						 ></node>
+	  	<node  key="19"  	descr="案件呈批"	show="group1,card1,card2,group2,card21,card22,card23,card24,card25,card26,group3,card31,card32,card33" 
+	  						edit="group1,card2,group3,card31,card32,card33" 
+	  						define="card31" 
+	  						 ></node>
+	  	<node  key="1"  	descr="科长审核"	show="group1,card1,card2,group2,card21,card22,card23,card24,card25,card26,group3,card31,card32,card33" 
+	  						edit="group1,card2" 
+	  						define="card31" 
+	  						 ></node>
+	  	<node  key="43"  	descr="主管局长审核"	show="group1,card1,card2,group2,card21,card22,card23,card24,card25,card26,group3,card31,card32,card33" 
+	  						edit="group1,card2" 
+	  						define="card31" 
+	  						></node>
+	  	<node  key="9"  	descr="法宣科科长审核"	show="group1,card1,card2,group2,card21,card22,card23,card24,card25,card26,group3,card31,card32,card33" 
+	  						edit="group1,card2" 
+	  						define="card31" 
+	  						 ></node>
+	  	<node  key="23"  	descr="主管局长审核"	show="group1,card1,card2,group2,card21,card22,card23,card24,card25,card26,group3,card31,card32,card33" 
+	  						edit="group1,card2" 
+	  						define="card31" 
+	  						 ></node>
+	  	
+	  	<node  key="24"  	descr="处罚决定"	show="group1,card1,card2,group2,card21,card22,card23,card24,card25,card26,group3,card31,card32,card33" 
+	  						edit="group1,card2,group3,card31,card32,card33" 
+	  						define="card31" 
+	  						 ></node>
+	  						 
+	  	<node  key="5"  	descr="下达文书"	show="group1,card1,card2,group2,card21,card22,card23,card24,card25,card26,group3,card31,card32,card33,card34" 
+	  						edit="group1,card2,group3,card34" 
+	  						define="card34" 
+	  						 requestedit="card34"></node>
+	  	<node  key="26"  	descr="强制催告"	show="group1,card1,card2,group2,card21,card22,card23,card24,card25,card26,group3,card31,card32,card33,card34,card35" 
+	  						edit="group1,card2,group3,card35" 
+	  						define="card35" 
+	  						 requestedit="card35"></node>
+	  	<node  key="2"  	descr="执行情况"	show="group1,card1,card2,group2,card21,card22,card23,card24,card25,card26,group3,card31,card32,card33,card34,card35,card36" 
+	  						edit="group1,card2,group3,card36" 
+	  						define="card36" 
+	  						 requestedit="card36"></node>
+	  	<node  key="17"  	descr="整改情况复查"	show="group1,card1,card2,group2,card21,card22,card23,card24,card25,card26,group3,card31,card32,card33,card34,card35,card36,card37" 
+	  						edit="group1,card2,group3,card37" 
+	  						define="card37" 
+	  						 requestedit="card37"></node>
+	  	<node  key="18"  	descr="结案"	show="group1,card1,card2,group2,card21,card22,card23,card24,card25,card26,group3,card31,card32,card33,card34,card35,group4,card41" 
+	  						edit="group1,card2,group4,card41" 
+	  						define="card41" 
+	  						 requestedit="card41"
+	  						 extstr="lccbrjayj"
+	  						  bysavecard="card36,card37"></node>
+	  	<node  key="27"  	descr="科长审核"	show="group1,card1,card2,group2,card21,card22,card23,card24,card25,card26,group3,card31,card32,card33,card34,card35,group4,card41" 
+	  						edit="group1,card2" 
+	  						define="card41" 
+	  						requestedit=""
+	  						extstr="lcdcjgjayj"
+	  						bysavecard="card36,card37"></node>
+	  	
+	  	<node  key="22"  	descr="主管局长审核"	show="group1,card1,card2,group2,card21,card22,card23,card24,card25,card26,group3,card31,card32,card33,card34,card35,group4,card41" 
+	  						edit="group1,card2" 
+	  						define="card41" 
+	  						requestedit=""
+	  						extstr="lcfzzgjzyj"
+	  						bysavecard="card36,card37"></node>
+	  	<node  key="14"  	descr="归档"			show="group1,card1,card2,group2,card21,card22,card23,card24,card25,card26,group3,card31,card32,card33,card34,card35,group4,card41" 
+	  						edit="group1,card2" 
+	  						define="card41" 
+	  						requestedit=""
+	  						bysavecard="card36,card37"></node>
+	  						 
+	  	<!-- 销案流程图 -->
+	  	<node  key="8"  	descr="销案"	show="group1,card1,card2,group6,card61" 
+	  						edit="group1,card2,group6,card61" 
+	  						define="card61" 
+	  						 requestedit="card61"
+	  						 extstr="lcxacbryj"
+	  						 bysavecard="all"></node>
+	  	<node  key="42"  	descr="科长审核"	show="group1,card1,card2,group6,card61" 
+	  						edit="group1,card2" 
+	  						define="card61"
+	  						 requestedit=""
+	  						 extstr="lcxacbjgyj"
+	  						 bysavecard="all"></node>
+	  	
+	  	<node  key="7"  	descr="主管局长审核"	show="group1,card1,card2,group6,card61" 
+	  						edit="group1,card2" 
+	  						define="card61"
+	  						 requestedit=""
+	  						 extstr="lcxajzyj"
+	  						 bysavecard="all"></node>
+	  	<node  key="40"  	descr="归档"	show="group1,card1,card2,group6,card61" 
+	  						edit="group1,card2" 
+	  						define="card61"
+	  						 requestedit=""
+	  						 bysavecard="all"></node>					 
+	  	<!-- 移送流程文档 -->
+	  	<node  key="10"  	descr="移送申请"	show="group1,card1,card2,group5,card51,card52" 
+	  						edit="group1,card2,group5,card51,card52" 
+	  						define="card51"
+	  						 requestedit="card51,card52"
+	  						 extstr="lcyscbryj"></node>
+	  	<node  key="20"  	descr="科长审核"	show="group1,card1,card2,group5,card51,card52" 
+	  						edit="group1,card2," 
+	  						define="card51"
+	  						 requestedit=""
+	  						 extstr="lcyscbbmyj"></node>
+	  	<node  key="32"  	descr="主管局长审核"	show="group1,card1,card2,group5,card51,card52" 
+	  						edit="group1,card2" 
+	  						define="card51"
+	  						 requestedit=""></node>
+	  	
+	  	<node  key="3"  	descr="移送决定"	show="group1,card1,card2,group5,card51,card52" 
+	  						edit="group1,card2,group5,card51,card52" 
+	  						define="card51"
+	  						 requestedit="card51,card52"></node>
+	  						 
+	  	<node  key="-1"  descr="查看" show="group9,card91,card92,group1,card1,card2" edit=""
+	  					  bysavecard="all"
+	  					  define="card1"  requestedit=""></node>
+	  						 
+  </nodecard>
+</root>

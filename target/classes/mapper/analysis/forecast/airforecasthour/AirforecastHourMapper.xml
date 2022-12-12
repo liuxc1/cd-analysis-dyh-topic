@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="ths.project.analysis.forecast.airforecasthour.mapper.AirForecastHourMapper">
+
+    <!--查询所有模式和用户-->
+    <select id="getForecastTypeAndUser"
+            resultType="ths.project.analysis.forecast.airforecasthour.entity.ModelwqHourRow">
+        SELECT MODEL AS MODEL, MODELNAME AS USER_NAME
+        FROM AIR_FORECAST.T_BAS_MODELS
+        WHERE STATE = 1
+        UNION ALL
+        SELECT REPORT_USER_CODE AS MODE, REPORT_USER_NAME AS USER_NAME
+        FROM DBO.T_ANS_GENERAL_REPORT
+        WHERE DELETE_FLAG = '0'
+          AND ASCRIPTION_TYPE = 'FORECAST_HOUR'
+          AND REPORT_TIME = CONVERT(datetime, #{modeltime}, 20)
+    </select>
+
+    <!--查询各模式，用户下得预报数据和实际数据-->
+    <!--分别查询预报数据和实时数据合并后行专列，再屏接显示时间-->
+    <select id="getTableData" resultType="java.util.Map">
+        SELECT B.*,'${modeltime}'+' '+d.RESULT_TIME AS "resultTime" FROM (
+        <foreach collection="hour" item="item" open="" separator="UNION ALL" close="">
+            SELECT '${item}' RESULT_TIME
+        </foreach>
+        ) D LEFT JOIN (
+        SELECT
+        <foreach collection='paramList' item="item" open="" close="" separator="">
+            MAX( CASE WHEN [MODEL] = '${item.model}' THEN PM25 END) "${item.pm25}",
+            MAX( CASE WHEN [MODEL] = '${item.model}' THEN O3 END ) "${item.o3}",
+        </foreach>
+        a.RESULT_TIME,
+        MAX(A.STATE) AS STATE
+        FROM (
+        SELECT MODEL,RESULTTIME AS RESULT_TIME,PM25,O3,CASE WHEN USER_NAME IS NULL THEN MODEL ELSE USER_NAME END
+        USER_NAME,
+        B.STATE FROM
+        [AIR_FORECAST].[T_BAS_MODELWQ_HOUR_ROW] A
+        LEFT JOIN DBO.T_ANS_GENERAL_REPORT B
+        ON A.MODEL=B.REPORT_USER_CODE
+        AND B.ASCRIPTION_TYPE='FORECAST_HOUR'
+        AND B.REPORT_TIME=CONVERT(datetime,#{modeltime}+' 00:00:00', 120)
+        <where>
+            AND REGIONCODE = '510100000000'
+            AND POINTCODE = #{pointCode}
+            AND MODEL in
+            <foreach collection='models.split(",")' item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+            <if test='modeltime != null and modeltime != ""'>
+                AND MODELTIME = CONVERT(datetime,#{modeltime}+' 00:00:00', 120)-1
+                AND DATEDIFF(DAY,MODELTIME,RESULTTIME)=1
+            </if>
+        </where>
+        UNION ALL
+        SELECT 'SHISHI' MODEL,MONITORTIME,PM2_5 PM25,O3,'实时' USERNAME,null as state FROM
+        TENVAIR.T_ENV_AIRDATA_REGION_HOUR
+        <where>
+            AND CODE_REGION = '510100000000'
+            <if test='modeltime != null and modeltime != ""'>
+                AND MONITORTIME &gt;= CONVERT(datetime,#{modeltime}+' 00:00:00', 120)
+                AND MONITORTIME &lt;= CONVERT(datetime,#{modeltime}+' 23:59:40', 120)
+            </if>
+        </where>
+        <!-- 查询预报数据和实时数据结束-->
+        ) AS A GROUP BY a.RESULT_TIME
+        ) B ON D.RESULT_TIME=substring(CONVERT(VARCHAR,b.RESULT_TIME, 120) ,12,2)
+        ORDER BY d.RESULT_TIME
+
+
+    </select>
+
+    <!--查询最大时间-->
+    <select id="getMonth" resultType="java.util.Map">
+        SELECT CONVERT(VARCHAR, MAX(CASE WHEN B.REPORT_TIME IS NULL THEN A.MODELTIME ELSE B.REPORT_TIME END),
+                       23) AS MAX_DATE
+        FROM AIR_FORECAST.T_BAS_MODELWQ_HOUR_ROW A
+                 LEFT JOIN DBO.T_ANS_GENERAL_REPORT B
+                           ON A.MODEL = B.REPORT_USER_CODE AND B.ASCRIPTION_TYPE = 'FORECAST_HOUR'
+        WHERE POINTCODE='510100000000'
+    </select>
+
+    <!--查询该月日数据情况-->
+    <select id="getDayList" resultType="java.util.Map">
+        SELECT
+            A.MODELTIME,
+            CAST ( SUBSTRING ( A.MODELTIME, 9, 2 ) AS INTEGER ) SHOW_TEXT,
+            CASE WHEN B.MODELTIME IS NULL THEN 'N' ELSE 'Y' END AS IS_DATA,
+            CASE WHEN A.MODELTIME = #{maxDate} THEN	'Y' ELSE 'N' END AS IS_MAX_DATE,
+            CASE WHEN A.MODELTIME > CONVERT ( VARCHAR ( 10 ), GETDATE( ), 23 ) THEN 'N' ELSE 'Y' END  IS_DISABLED
+        FROM
+            (
+                SELECT
+                    CONVERT (VARCHAR (10),dateadd(D, number,#{month} + '-01')-1,23) AS MODELTIME
+                FROM
+                    master..spt_values
+                WHERE
+                    type = 'p'
+                  AND number between 1 and (select datediff(day,#{month} + '-01',dateadd(MONTH,1,#{month} + '-01')))
+            ) A
+                LEFT JOIN (
+                SELECT
+                    CONVERT	( VARCHAR, MODELTIME, 23 ) MODELTIME
+                FROM
+                    (
+                        SELECT DISTINCT
+                            REPORT_TIME AS MODELTIME
+                        FROM
+                            DBO.T_ANS_GENERAL_REPORT B
+                        WHERE
+                            B.IS_MAIN = 1
+                          AND REPORT_TIME >= CONVERT ( datetime, #{month}  + '-01', 20 )
+			<![CDATA[AND REPORT_TIME < DATEADD( MONTH, 1, CONVERT ( datetime, #{month}  + '-01', 20))]]>
+                          AND B.ASCRIPTION_TYPE= 'FORECAST_HOUR'
+                    ) T
+            ) B ON A.MODELTIME = B.MODELTIME
+        ORDER BY SHOW_TEXT
+    </select>
+    <!--更新-->
+    <update id="updateByUser">
+        UPDATE
+            [AIR_FORECAST].[T_BAS_MODELWQ_HOUR_ROW]
+        set
+            [PM25]=#{pm25},
+            [O3]=#{o3}
+        WHERE MODELTIME=CONVERT (datetime, #{modelTime}, 120)
+            AND [RESULTTIME]= CONVERT (datetime, #{resultTime}, 120)
+            AND [MODEL]=#{userId}
+    </update>
+</mapper>
+
