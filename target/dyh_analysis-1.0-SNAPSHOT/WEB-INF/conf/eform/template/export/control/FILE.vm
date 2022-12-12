@@ -1,2 +1,0 @@
-##单选文件
-${t}<div id="file_${controlFormCell.formcellId}$!{modelFieldCodeIndex}" class="file" style="width: 100%;"#if("$!{controlFormCell.dataValidateEngine}" != "") data-validation-engine="$!{controlFormCell.dataValidateEngine}"#end></div>

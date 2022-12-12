@@ -1,6 +1,0 @@
-##下拉框
-${t}<select class="form-control #if($!{controlFormCell.formcellSelectCanedit} == "true")editable#end" id="${modelFieldCodeParam}$!{modelFieldCodeIndex}"#if("$!{controlFormCell.pFormcellId}" == "") name="${modelFieldCodeParam}"#end#if(${showValueAttribute} == "true") oldValue="${elParam}{${modelFieldCodeValueParam}}"#end#if("$!{controlFormCell.dataValidateEngine}" != "") data-validation-engine="$!{controlFormCell.dataValidateEngine}"#end>
-${t}	<c:forEach var="dictionary" items='${elParam}{dictionaryMap["${controlFormCell.formcellDictionary}"]}'>
-${t}		<option value="${elParam}{dictionary.dictionary_code}" #if(${showValueAttribute} == "true")<c:if test='${elParam}{dictionary.dictionary_code == ${modelFieldCodeValueParam}}'>selected="selected"</c:if>#end>${elParam}{dictionary.dictionary_name}</option>
-${t}	</c:forEach>
-${t}</select>

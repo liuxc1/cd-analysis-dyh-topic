@@ -1,5 +1,0 @@
-##LABEL
-${t}<div class="formcell-label" #if("$!{controlFormCell.formcellStyle}" != "")style="${controlFormCell.formcellStyle}"#end>
-${t}	<span class="bigger-110">$!{controlFormCell.formcellDescr}</span>
-${t}	<div #if($!{controlFormCell.formcellLabelShowline} == "false")style="display: none;"#end></div>
-${t}</div>

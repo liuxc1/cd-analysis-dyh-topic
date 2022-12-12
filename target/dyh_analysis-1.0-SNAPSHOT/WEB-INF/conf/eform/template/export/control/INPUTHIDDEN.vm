@@ -1,2 +1,0 @@
-##隐藏控件
-${t}<input type="hidden" id="${modelFieldCodeParam}$!{modelFieldCodeIndex}"#if("$!{controlFormCell.pFormcellId}" == "") name="${modelFieldCodeParam}"#end value="${elParam}{${modelFieldCodeValueParam}}"/>
